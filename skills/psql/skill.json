@@ -1,0 +1,6 @@
+{
+  "entry": {
+    "query": "src/psql/query.ts"
+  },
+  "utils": ["utils"]
+}

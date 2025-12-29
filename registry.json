@@ -17,6 +17,11 @@
       "version": "1.0.0"
     },
     {
+      "name": "psql",
+      "description": "Run PostgreSQL queries and meta-commands via CLI",
+      "version": "1.0.0"
+    },
+    {
       "name": "linear-projects-read",
       "description": "List and get Linear projects via CLI (read-only operations)",
       "version": "1.0.0"
@@ -24,6 +29,11 @@
     {
       "name": "linear-projects-write",
       "description": "Create and update Linear projects via CLI (write operations)",
+      "version": "1.0.0"
+    },
+    {
+      "name": "tmux",
+      "description": "Manage tmux sessions for interactive background processes",
       "version": "1.0.0"
     },
     {
