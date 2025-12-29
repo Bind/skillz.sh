@@ -5,7 +5,7 @@ CLI for distributing OpenCode skills. Similar to shadcn, but for AI agent skills
 ## Installation
 
 ```bash
-bun install -g @skillz/cli
+bun install -g github:Bind/skillz.sh/cli
 ```
 
 ## Usage
@@ -53,16 +53,6 @@ skz add
   ]
 }
 ```
-
-### Authentication
-
-`skz` uses the GitHub CLI (`gh`) for authentication. Make sure you're logged in:
-
-```bash
-gh auth login
-```
-
-This allows `skz` to access private registries using your existing GitHub credentials.
 
 ## Registry Format
 

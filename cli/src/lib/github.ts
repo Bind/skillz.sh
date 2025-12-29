@@ -1,4 +1,4 @@
-import { $ } from "bun";
+const DEFAULT_BRANCH = "main";
 
 function parseRegistryUrl(registry: string): { owner: string; repo: string } {
   // Format: github:owner/repo
@@ -16,31 +16,18 @@ export async function fetchFile(
   path: string
 ): Promise<string> {
   const { owner, repo } = parseRegistryUrl(registry);
-  const endpoint = `/repos/${owner}/${repo}/contents/${path}`;
+  const url = `https://raw.githubusercontent.com/${owner}/${repo}/${DEFAULT_BRANCH}/${path}`;
 
-  try {
-    const result =
-      await $`gh api ${endpoint} --header "Accept: application/vnd.github.raw+json"`.text();
-    return result;
-  } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
+  const response = await fetch(url);
 
-    if (message.includes("404") || message.includes("Not Found")) {
+  if (!response.ok) {
+    if (response.status === 404) {
       throw new Error(`File not found: ${path} in ${registry}`);
     }
-
-    if (
-      message.includes("gh: command not found") ||
-      message.includes("not logged in")
-    ) {
-      throw new Error(
-        "GitHub CLI (gh) is required. Install it and run `gh auth login`.\n" +
-          "https://cli.github.com/"
-      );
-    }
-
-    throw new Error(`Failed to fetch ${path}: ${message}`);
+    throw new Error(`Failed to fetch ${path}: ${response.status} ${response.statusText}`);
   }
+
+  return response.text();
 }
 
 export async function fetchJson<T>(registry: string, path: string): Promise<T> {
@@ -62,34 +49,37 @@ export async function listDirectory(
   path: string
 ): Promise<FileInfo[]> {
   const { owner, repo } = parseRegistryUrl(registry);
-  const endpoint = `/repos/${owner}/${repo}/contents/${path}`;
+  const url = `https://api.github.com/repos/${owner}/${repo}/contents/${path}?ref=${DEFAULT_BRANCH}`;
 
-  try {
-    const result = await $`gh api ${endpoint}`.json();
+  const response = await fetch(url);
 
-    if (!Array.isArray(result)) {
-      // Single file, not a directory
-      return [
-        {
-          name: result.name,
-          path: result.path,
-          type: result.type === "dir" ? "dir" : "file",
-        },
-      ];
-    }
-
-    return result.map((item: { name: string; path: string; type: string }) => ({
-      name: item.name,
-      path: item.path,
-      type: item.type === "dir" ? "dir" : "file",
-    }));
-  } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
-    if (message.includes("404") || message.includes("Not Found")) {
+  if (!response.ok) {
+    if (response.status === 404) {
       throw new Error(`Directory not found: ${path} in ${registry}`);
     }
-    throw new Error(`Failed to list directory ${path}: ${message}`);
+    throw new Error(`Failed to list directory ${path}: ${response.status} ${response.statusText}`);
   }
+
+  const result = (await response.json()) as
+    | { name: string; path: string; type: string }
+    | { name: string; path: string; type: string }[];
+
+  if (!Array.isArray(result)) {
+    // Single file, not a directory
+    return [
+      {
+        name: result.name,
+        path: result.path,
+        type: result.type === "dir" ? "dir" : "file",
+      },
+    ];
+  }
+
+  return result.map((item: { name: string; path: string; type: string }) => ({
+    name: item.name,
+    path: item.path,
+    type: item.type === "dir" ? "dir" : "file",
+  }));
 }
 
 /**

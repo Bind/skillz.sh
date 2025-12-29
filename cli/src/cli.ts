@@ -25,9 +25,6 @@ Examples:
   skz list                 List all available skills
   skz add code-review      Add a specific skill
   skz add                  Interactive skill picker
-
-Authentication:
-  Uses GitHub CLI (gh) - run 'gh auth login' first
 `;
 
 async function main(): Promise<void> {
