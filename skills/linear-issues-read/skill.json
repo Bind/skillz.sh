@@ -1,0 +1,10 @@
+{
+  "entry": {
+    "list-issues": "src/linear/list-issues.ts",
+    "get-issue": "src/linear/get-issue.ts"
+  },
+  "utils": ["utils", "linear"],
+  "dependencies": {
+    "@linear/sdk": "^29.0.0"
+  }
+}

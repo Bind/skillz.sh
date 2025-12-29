@@ -1,0 +1,9 @@
+# Dependencies
+node_modules/
+bun.lock
+
+# Source build artifacts
+src/linear/node_modules/
+
+# CLI dependencies
+cli/node_modules/

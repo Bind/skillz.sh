@@ -1,0 +1,7 @@
+#!/bin/sh
+
+# Regenerate registry.json from skills/
+bun run build.ts
+
+# Stage the updated registry.json
+git add registry.json

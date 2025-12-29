@@ -1,0 +1,10 @@
+{
+  "entry": {
+    "create-project": "src/linear/create-project.ts",
+    "update-project": "src/linear/update-project.ts"
+  },
+  "utils": ["utils", "linear"],
+  "dependencies": {
+    "@linear/sdk": "^29.0.0"
+  }
+}

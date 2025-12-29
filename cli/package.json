@@ -1,0 +1,40 @@
+{
+  "name": "@bind/skillz",
+  "version": "0.0.2",
+  "description": "CLI for distributing OpenCode skills",
+  "type": "module",
+  "bin": {
+    "skillz": "./src/cli.ts",
+    "skz": "./src/cli.ts"
+  },
+  "files": [
+    "src"
+  ],
+  "scripts": {
+    "dev": "bun run ./src/cli.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [
+    "opencode",
+    "skills",
+    "cli",
+    "ai",
+    "agents"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Bind/skillz.sh.git",
+    "directory": "cli"
+  },
+  "author": "Doug Binder",
+  "license": "MIT",
+  "dependencies": {
+    "@inquirer/prompts": "^7.0.0"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  }
+}

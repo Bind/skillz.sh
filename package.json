@@ -1,0 +1,13 @@
+{
+  "name": "skillz.sh",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "bun run build.ts",
+    "build:clean": "bun run build.ts --clean"
+  },
+  "dependencies": {
+    "@linear/sdk": "^29.0.0"
+  }
+}

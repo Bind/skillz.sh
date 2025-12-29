@@ -1,0 +1,35 @@
+{
+  "name": "skillz.sh",
+  "skills": [
+    {
+      "name": "linear-milestones-read",
+      "description": "List Linear project milestones via CLI (read-only operations)",
+      "version": "1.0.0"
+    },
+    {
+      "name": "linear-issues-read",
+      "description": "List and get Linear issues via CLI (read-only operations)",
+      "version": "1.0.0"
+    },
+    {
+      "name": "linear-issues-write",
+      "description": "Create and update Linear issues via CLI (write operations)",
+      "version": "1.0.0"
+    },
+    {
+      "name": "linear-projects-read",
+      "description": "List and get Linear projects via CLI (read-only operations)",
+      "version": "1.0.0"
+    },
+    {
+      "name": "linear-projects-write",
+      "description": "Create and update Linear projects via CLI (write operations)",
+      "version": "1.0.0"
+    },
+    {
+      "name": "linear-milestones-write",
+      "description": "Create and update Linear project milestones via CLI (write operations)",
+      "version": "1.0.0"
+    }
+  ]
+}
