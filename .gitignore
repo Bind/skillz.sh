@@ -7,3 +7,9 @@ src/linear/node_modules/
 
 # CLI dependencies
 cli/node_modules/
+
+# Playwright
+.playwright-data/
+test-results/
+playwright-report/
+playwright/.cache/

@@ -7,7 +7,8 @@
     "build": "bun run build.ts",
     "build:clean": "bun run build.ts --clean"
   },
-  "dependencies": {
-    "@linear/sdk": "^29.0.0"
+  "devDependencies": {
+    "@linear/sdk": "^29.0.0",
+    "playwright": "^1.57.0"
   }
 }

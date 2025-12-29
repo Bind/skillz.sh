@@ -12,6 +12,11 @@
       "version": "1.0.0"
     },
     {
+      "name": "playwright-browser",
+      "description": "Control a Playwright browser via CLI - navigate, interact, and screenshot",
+      "version": "1.0.0"
+    },
+    {
       "name": "linear-issues-write",
       "description": "Create and update Linear issues via CLI (write operations)",
       "version": "1.0.0"
