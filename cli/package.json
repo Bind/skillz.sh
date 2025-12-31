@@ -29,7 +29,9 @@
   "author": "Doug Binder",
   "license": "MIT",
   "dependencies": {
-    "@inquirer/prompts": "^7.0.0"
+    "@inquirer/prompts": "^7.0.0",
+    "@opentui/core": "^0.1.67",
+    "yaml": "^2.8.2"
   },
   "devDependencies": {
     "@types/bun": "latest"
