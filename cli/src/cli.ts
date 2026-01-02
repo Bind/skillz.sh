@@ -26,12 +26,13 @@ Options:
   -v, --version       Show version number
 
 Agents Command:
-  skz agents <subcommand> [--global]
+  skz agents <subcommand> [options]
 
   Subcommands:
+    list                              List agents available from registries
     add [agents...]                   Add prebuilt agents from registries
-    list                              List agents and skill permissions
-    show <agent>                      Show agent's skill permissions
+    installed [--global]              List installed agents
+    show <agent> [--global]           Show agent's skill permissions
     set <agent> <skill> <perm>        Set permission (allow|deny|ask)
     enable <agent> <skill>            Enable skill (set to allow)
     disable <agent> <skill>           Disable skill (set to deny)
@@ -51,10 +52,10 @@ Examples:
   skz list                            List all available skills
   skz add code-review                 Add a specific skill
   skz add                             Interactive skill picker
-  skz agents add                      Interactive agent picker
+  skz agents list                     List available agents from registries
   skz agents add docs                 Add the docs agent
-  skz agents list                     List project agents
-  skz agents -g list                  List global agents
+  skz agents installed                List installed project agents
+  skz agents installed --global       List installed global agents
   skz i                               Launch interactive TUI
   skz interactive --global            TUI for global agents
 `;

@@ -11,6 +11,8 @@ import {
   type AgentLocation,
 } from "../lib/agent.ts";
 import { agentAdd } from "./agent-add.ts";
+import { readConfig } from "../lib/config.ts";
+import { fetchAllAgents } from "../lib/registry.ts";
 
 type PermissionValue = "allow" | "deny" | "ask";
 
@@ -242,12 +244,13 @@ export async function agents(args: string[]): Promise<void> {
   // No subcommand - show help
   if (subArgs.length === 0) {
     console.log(`
-Usage: skz agents [--global] <subcommand>
+Usage: skz agents <subcommand> [options]
 
 Subcommands:
+  list                                List agents available from registries
   add [agents...]                     Add prebuilt agents from registries
-  list                                List agents and skill permissions
-  show <agent>                        Show agent's skill permissions
+  installed [--global]                List installed agents
+  show <agent> [--global]             Show agent's skill permissions
   set <agent> <skill> <perm>          Set permission (allow|deny|ask)
   enable <agent> <skill>              Enable skill (set to allow)
   disable <agent> <skill>             Disable skill (set to deny)
@@ -270,11 +273,50 @@ For interactive management, use: skz interactive
     }
 
     case "list": {
-      // List agents and their skill permissions
+      // List agents available from registries
+      const config = await readConfig();
+
+      if (!config) {
+        console.error("No skz.json found. Run `skz init` first.");
+        process.exit(1);
+      }
+
+      console.log("\nFetching agents from registries...\n");
+
+      const registryAgents = await fetchAllAgents(config.registries);
+
+      if (registryAgents.length === 0) {
+        console.log("No agents found in configured registries.");
+        return;
+      }
+
+      // Calculate column widths
+      const nameWidth = Math.max(...registryAgents.map((a) => a.name.length), 4);
+      const versionWidth = Math.max(...registryAgents.map((a) => a.version.length), 7);
+
+      // Print header
+      const header = `${"NAME".padEnd(nameWidth)}  ${"VERSION".padEnd(versionWidth)}  DESCRIPTION`;
+      console.log(header);
+      console.log("-".repeat(header.length));
+
+      // Print agents
+      for (const agent of registryAgents) {
+        console.log(
+          `${agent.name.padEnd(nameWidth)}  ${agent.version.padEnd(versionWidth)}  ${agent.description}`
+        );
+      }
+
+      console.log(`\n${registryAgents.length} agent(s) available`);
+      console.log("\nUse `skz agents add <name>` to install an agent.\n");
+      break;
+    }
+
+    case "installed": {
+      // List installed agents and their skill permissions
       if (agentList.length === 0) {
         console.log(`\nNo ${locationLabel} agents found.`);
         if (location === "project") {
-          console.log("Create an agent in .opencode/agent/");
+          console.log("Create an agent in .opencode/agent/ or use `skz agents add`");
           console.log("Or use --global to list global agents.");
         } else {
           console.log("Create an agent in ~/.config/opencode/agent/");
@@ -282,7 +324,7 @@ For interactive management, use: skz interactive
         return;
       }
 
-      console.log(`\n${agentList.length} ${locationLabel} agent(s) found:\n`);
+      console.log(`\n${agentList.length} ${locationLabel} agent(s) installed:\n`);
 
       for (const agent of agentList) {
         printAgentSkillStatus(agent, skills);
@@ -379,25 +421,25 @@ For interactive management, use: skz interactive
     default:
       console.error(`Unknown subcommand: ${subcommand}`);
       console.log(`
-Usage: skz agents [--global] <subcommand> [args]
-
-Options:
-  --global, -g                        Use global agents (~/.config/opencode/agent/)
-                                      Default: project agents (.opencode/agent/)
+Usage: skz agents <subcommand> [options]
 
 Subcommands:
+  list                                List agents available from registries
   add [agents...]                     Add prebuilt agents from registries
-  list                                List agents and skill permissions
-  show <agent>                        Show skill permissions for an agent
+  installed [--global]                List installed agents
+  show <agent> [--global]             Show skill permissions for an agent
   set <agent> <skill> <permission>    Set skill permission (allow|deny|ask)
   enable <agent> <skill>              Enable skill for agent (set to allow)
   disable <agent> <skill>             Disable skill for agent (set to deny)
 
+Options:
+  --global, -g                        Use global agents (~/.config/opencode/agent/)
+
 Examples:
-  skz agents add                      Interactive agent picker
+  skz agents list                     List available agents from registries
   skz agents add docs                 Add the docs agent
-  skz agents list                     List project agents
-  skz agents --global list            List global agents
+  skz agents installed                List project agents
+  skz agents installed --global       List global agents
   skz agents set builder linear-* deny    Deny linear skills for builder
 
 For interactive management, use: skz interactive
