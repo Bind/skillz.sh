@@ -16,7 +16,9 @@ export async function fetchFile(
   path: string
 ): Promise<string> {
   const { owner, repo } = parseRegistryUrl(registry);
-  const url = `https://raw.githubusercontent.com/${owner}/${repo}/${DEFAULT_BRANCH}/${path}`;
+  // Add cache buster to avoid GitHub CDN caching stale content
+  const cacheBuster = Date.now();
+  const url = `https://raw.githubusercontent.com/${owner}/${repo}/${DEFAULT_BRANCH}/${path}?_=${cacheBuster}`;
 
   const response = await fetch(url);
 
