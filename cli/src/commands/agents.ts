@@ -10,6 +10,7 @@ import {
   type InstalledSkill,
   type AgentLocation,
 } from "../lib/agent.ts";
+import { agentAdd } from "./agent-add.ts";
 
 type PermissionValue = "allow" | "deny" | "ask";
 
@@ -238,15 +239,36 @@ export async function agents(args: string[]): Promise<void> {
   const agentList = await getAgents(location);
   const skills = await getInstalledSkills();
 
-  // No subcommand - interactive mode
+  // No subcommand - show help
   if (subArgs.length === 0) {
-    await interactiveManage(location);
+    console.log(`
+Usage: skz agents [--global] <subcommand>
+
+Subcommands:
+  add [agents...]                     Add prebuilt agents from registries
+  list                                List agents and skill permissions
+  show <agent>                        Show agent's skill permissions
+  set <agent> <skill> <perm>          Set permission (allow|deny|ask)
+  enable <agent> <skill>              Enable skill (set to allow)
+  disable <agent> <skill>             Disable skill (set to deny)
+
+Options:
+  --global, -g                        Use global agents (~/.config/opencode/agent/)
+
+For interactive management, use: skz interactive
+`);
     return;
   }
 
   const subcommand = subArgs[0];
 
   switch (subcommand) {
+    case "add": {
+      const agentNames = subArgs.slice(1);
+      await agentAdd(agentNames);
+      break;
+    }
+
     case "list": {
       // List agents and their skill permissions
       if (agentList.length === 0) {
@@ -357,14 +379,14 @@ export async function agents(args: string[]): Promise<void> {
     default:
       console.error(`Unknown subcommand: ${subcommand}`);
       console.log(`
-Usage: skz agents [--global] [subcommand] [args]
+Usage: skz agents [--global] <subcommand> [args]
 
 Options:
-  --global, -g                        Manage global agents (~/.config/opencode/agent/)
+  --global, -g                        Use global agents (~/.config/opencode/agent/)
                                       Default: project agents (.opencode/agent/)
 
 Subcommands:
-  (none)                              Interactive TUI mode
+  add [agents...]                     Add prebuilt agents from registries
   list                                List agents and skill permissions
   show <agent>                        Show skill permissions for an agent
   set <agent> <skill> <permission>    Set skill permission (allow|deny|ask)
@@ -372,11 +394,13 @@ Subcommands:
   disable <agent> <skill>             Disable skill for agent (set to deny)
 
 Examples:
-  skz agents                          Manage project agents (TUI)
-  skz agents --global                 Manage global agents (TUI)
+  skz agents add                      Interactive agent picker
+  skz agents add docs                 Add the docs agent
   skz agents list                     List project agents
   skz agents --global list            List global agents
   skz agents set builder linear-* deny    Deny linear skills for builder
+
+For interactive management, use: skz interactive
 `);
       process.exit(1);
   }

@@ -1,9 +1,12 @@
 import { fetchFile, fetchJson } from "./github.ts";
 import {
   SKILLS_DIR,
+  AGENTS_DIR,
   type Registry,
   type RegistrySkill,
+  type RegistryAgent,
   type SkillJson,
+  type AgentJson,
 } from "../types.ts";
 import { mkdir } from "node:fs/promises";
 import { join, dirname } from "node:path";
@@ -180,6 +183,95 @@ export async function fetchAllSkills(
 
   return allSkills;
 }
+
+// ============================================================================
+// Agent Functions
+// ============================================================================
+
+export interface AgentWithRegistry extends RegistryAgent {
+  registry: string;
+  registryName: string;
+}
+
+/**
+ * Fetch all agents from all configured registries
+ */
+export async function fetchAllAgents(
+  registries: string[]
+): Promise<AgentWithRegistry[]> {
+  const allAgents: AgentWithRegistry[] = [];
+
+  for (const registryUrl of registries) {
+    try {
+      const registry = await fetchRegistry(registryUrl);
+      for (const agent of registry.agents ?? []) {
+        allAgents.push({
+          ...agent,
+          registry: registryUrl,
+          registryName: registry.name,
+        });
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      console.error(`Failed to fetch registry ${registryUrl}: ${message}`);
+    }
+  }
+
+  return allAgents;
+}
+
+/**
+ * Fetch agent.md file from agents/<name>/agent.md
+ */
+export async function fetchAgentFile(
+  registryUrl: string,
+  agentName: string
+): Promise<string> {
+  return fetchFile(registryUrl, `agents/${agentName}/agent.md`);
+}
+
+/**
+ * Fetch agent.json for an agent from agents/<name>/agent.json
+ */
+export async function fetchAgentJson(
+  registryUrl: string,
+  agentName: string
+): Promise<AgentJson | null> {
+  try {
+    return await fetchJson<AgentJson>(
+      registryUrl,
+      `agents/${agentName}/agent.json`
+    );
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Check if an agent file exists locally
+ */
+export async function agentExists(agentName: string): Promise<boolean> {
+  const agentPath = join(AGENTS_DIR, `${agentName}.md`);
+  const file = Bun.file(agentPath);
+  return file.exists();
+}
+
+/**
+ * Install an agent file to .opencode/agent/<name>.md
+ */
+export async function installAgentFile(
+  agentName: string,
+  content: string
+): Promise<string> {
+  await mkdir(AGENTS_DIR, { recursive: true });
+  const agentPath = join(AGENTS_DIR, `${agentName}.md`);
+  await Bun.write(agentPath, content);
+  return agentPath;
+}
+
+// ============================================================================
+// Package.json Functions
+// ============================================================================
 
 /**
  * Read and parse the user's package.json

@@ -10,9 +10,41 @@ export interface RegistrySkill {
   version: string;
 }
 
+export interface RegistryAgent {
+  name: string;
+  description: string;
+  version: string;
+}
+
 export interface Registry {
   name: string;
   skills: RegistrySkill[];
+  agents?: RegistryAgent[];
+}
+
+// MCP server configuration (matches opencode.json structure)
+export interface McpConfig {
+  type: "local" | "remote";
+  url?: string;
+  command?: string[];
+  headers?: Record<string, string>;
+  environment?: Record<string, string>;
+  enabled?: boolean;
+}
+
+// agent.json structure
+export interface AgentJson {
+  /** Required MCP servers to install */
+  mcp?: Record<string, McpConfig>;
+  /** Required skills to install */
+  skills?: string[];
+}
+
+// Opencode.json structure (partial, for MCP management)
+export interface OpencodeConfig {
+  $schema?: string;
+  mcp?: Record<string, McpConfig>;
+  [key: string]: unknown;
 }
 
 export interface SkillJson {
@@ -37,3 +69,5 @@ export const DEFAULT_REGISTRY = "github:Bind/skillz.sh";
 export const DEFAULT_UTILS_DIR = "utils";
 export const CONFIG_FILE = "skz.json";
 export const SKILLS_DIR = ".opencode/skill";
+export const AGENTS_DIR = ".opencode/agent";
+export const OPENCODE_CONFIG_FILE = "opencode.json";

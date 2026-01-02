@@ -4,21 +4,23 @@ import { readdir } from "node:fs/promises";
 import { join } from "node:path";
 
 const SKILLS_DIR = "skills";
+const AGENTS_DIR = "agents";
 const REGISTRY_FILE = "registry.json";
 
-interface SkillMeta {
+interface ItemMeta {
   name: string;
   description: string;
   version: string;
 }
 
 /**
- * Parse YAML frontmatter from SKILL.md content
+ * Parse YAML frontmatter from markdown content.
+ * Works for both SKILL.md and agent.md files.
  */
-function parseFrontmatter(content: string): SkillMeta {
+function parseFrontmatter(content: string, fileName: string): ItemMeta {
   const match = content.match(/^---\n([\s\S]*?)\n---/);
   if (!match) {
-    throw new Error("No frontmatter found in SKILL.md");
+    throw new Error(`No frontmatter found in ${fileName}`);
   }
 
   const frontmatter = match[1]!;
@@ -35,7 +37,7 @@ function parseFrontmatter(content: string): SkillMeta {
 
   if (!meta.name || !meta.description || !meta.version) {
     throw new Error(
-      "SKILL.md frontmatter must include name, description, and version"
+      `${fileName} frontmatter must include name, description, and version`
     );
   }
 
@@ -49,7 +51,7 @@ function parseFrontmatter(content: string): SkillMeta {
 /**
  * Process a single skill directory and extract metadata
  */
-async function processSkill(skillName: string): Promise<SkillMeta | null> {
+async function processSkill(skillName: string): Promise<ItemMeta | null> {
   const skillMdPath = join(SKILLS_DIR, skillName, "SKILL.md");
 
   const skillMdFile = Bun.file(skillMdPath);
@@ -59,7 +61,7 @@ async function processSkill(skillName: string): Promise<SkillMeta | null> {
   }
 
   const skillMdContent = await skillMdFile.text();
-  const meta = parseFrontmatter(skillMdContent);
+  const meta = parseFrontmatter(skillMdContent, "SKILL.md");
 
   console.log(`  ${meta.name} v${meta.version}`);
 
@@ -67,13 +69,35 @@ async function processSkill(skillName: string): Promise<SkillMeta | null> {
 }
 
 /**
- * Main build function - generates registry.json from skills/
+ * Process a single agent directory and extract metadata
+ */
+async function processAgent(agentName: string): Promise<ItemMeta | null> {
+  const agentMdPath = join(AGENTS_DIR, agentName, "agent.md");
+
+  const agentMdFile = Bun.file(agentMdPath);
+  if (!(await agentMdFile.exists())) {
+    console.log(`  Skipping ${agentName}: no agent.md found`);
+    return null;
+  }
+
+  const agentMdContent = await agentMdFile.text();
+  const meta = parseFrontmatter(agentMdContent, "agent.md");
+
+  console.log(`  ${meta.name} v${meta.version}`);
+
+  return meta;
+}
+
+/**
+ * Main build function - generates registry.json from skills/ and agents/
  */
 async function build(): Promise<void> {
   console.log("\nBuilding registry.json...\n");
 
+  // Process skills
+  console.log("Skills:");
   const skillDirs = await readdir(SKILLS_DIR);
-  const skills: SkillMeta[] = [];
+  const skills: ItemMeta[] = [];
 
   for (const skillName of skillDirs) {
     if (skillName.startsWith(".")) continue;
@@ -89,6 +113,31 @@ async function build(): Promise<void> {
     }
   }
 
+  // Process agents
+  console.log("\nAgents:");
+  let agentDirs: string[] = [];
+  try {
+    agentDirs = await readdir(AGENTS_DIR);
+  } catch {
+    console.log("  No agents/ directory found");
+  }
+
+  const agents: ItemMeta[] = [];
+
+  for (const agentName of agentDirs) {
+    if (agentName.startsWith(".")) continue;
+
+    try {
+      const meta = await processAgent(agentName);
+      if (meta) {
+        agents.push(meta);
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      console.error(`  Error processing ${agentName}: ${message}`);
+    }
+  }
+
   const registry = {
     name: "skillz.sh",
     skills: skills.map((s) => ({
@@ -96,11 +145,18 @@ async function build(): Promise<void> {
       description: s.description,
       version: s.version,
     })),
+    agents: agents.map((a) => ({
+      name: a.name,
+      description: a.description,
+      version: a.version,
+    })),
   };
 
   await Bun.write(REGISTRY_FILE, JSON.stringify(registry, null, 2) + "\n");
 
-  console.log(`\nGenerated ${REGISTRY_FILE} with ${skills.length} skill(s).\n`);
+  console.log(
+    `\nGenerated ${REGISTRY_FILE} with ${skills.length} skill(s) and ${agents.length} agent(s).\n`
+  );
 }
 
 build().catch((error) => {

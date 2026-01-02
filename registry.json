@@ -46,5 +46,12 @@
       "description": "Create and update Linear project milestones via CLI (write operations)",
       "version": "1.0.0"
     }
+  ],
+  "agents": [
+    {
+      "name": "docs",
+      "description": "Fetches up-to-date documentation for libraries and APIs using Context7 and GitHub code search",
+      "version": "1.0.0"
+    }
   ]
 }
