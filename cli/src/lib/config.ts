@@ -15,49 +15,52 @@ import {
 export interface ConfigResult {
   /** The parsed config object */
   config: SkzConfig;
-  /** Path to the config file (e.g., ".opencode/skz.json") */
+  /** Path to the config file (e.g., ".opencode/skz.json" or ".claude/skz.json") */
   configPath: string;
-  /** Directory containing the config (e.g., ".opencode") */
+  /** Directory containing the config (e.g., ".opencode" or ".claude") */
   configDir: string;
   /** Resolved path to utils directory */
   utilsPath: string;
   /** True if using legacy location (./skz.json) */
   isLegacy: boolean;
+  /** True if using Claude location (.claude/skz.json) */
+  isClaude: boolean;
 }
 
 /**
- * Find and read config from either new or legacy location.
- * Checks .opencode/skz.json first, then falls back to ./skz.json
+ * Find and read config from known locations.
+ * Checks in order: .opencode/skz.json, .claude/skz.json, ./skz.json (legacy)
  */
 export async function findConfig(): Promise<ConfigResult | null> {
-  // Check new location first
-  let configPath = NEW_CONFIG_PATH;
-  let file = Bun.file(configPath);
-  let isLegacy = false;
+  const locations = [
+    { path: NEW_CONFIG_PATH, isLegacy: false, isClaude: false },
+    { path: CLAUDE_CONFIG_PATH, isLegacy: false, isClaude: true },
+    { path: LEGACY_CONFIG_PATH, isLegacy: true, isClaude: false },
+  ];
 
-  if (!(await file.exists())) {
-    // Fall back to legacy location
-    configPath = LEGACY_CONFIG_PATH;
-    file = Bun.file(configPath);
-    isLegacy = true;
+  for (const loc of locations) {
+    const file = Bun.file(loc.path);
+    if (await file.exists()) {
+      try {
+        const config = (await file.json()) as SkzConfig;
+        const configDir = dirname(loc.path);
+        const utilsPath = resolve(configDir, config.utils);
 
-    if (!(await file.exists())) {
-      return null;
+        return {
+          config,
+          configPath: loc.path,
+          configDir,
+          utilsPath,
+          isLegacy: loc.isLegacy,
+          isClaude: loc.isClaude,
+        };
+      } catch {
+        continue;
+      }
     }
   }
 
-  try {
-    const config = (await file.json()) as SkzConfig;
-    const configDir = dirname(configPath);
-    // Resolve utils path relative to config directory
-    // For ".opencode/skz.json" with utils: "./utils" -> ".opencode/utils"
-    // For "./skz.json" with utils: "utils" -> "./utils"
-    const utilsPath = resolve(configDir, config.utils);
-
-    return { config, configPath, configDir, utilsPath, isLegacy };
-  } catch {
-    return null;
-  }
+  return null;
 }
 
 /**
@@ -69,14 +72,14 @@ export async function readConfig(): Promise<SkzConfig | null> {
 }
 
 /**
- * Check if any config exists (new or legacy location)
+ * Check if any config exists (opencode, claude, or legacy location)
  */
 export async function configExists(): Promise<boolean> {
-  const newFile = Bun.file(NEW_CONFIG_PATH);
-  if (await newFile.exists()) return true;
-
-  const legacyFile = Bun.file(LEGACY_CONFIG_PATH);
-  return legacyFile.exists();
+  const locations = [NEW_CONFIG_PATH, CLAUDE_CONFIG_PATH, LEGACY_CONFIG_PATH];
+  for (const path of locations) {
+    if (await Bun.file(path).exists()) return true;
+  }
+  return false;
 }
 
 /**
