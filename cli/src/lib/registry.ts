@@ -140,6 +140,41 @@ export async function fetchSkillFiles(
 }
 
 /**
+ * Fetches all files for a Claude skill:
+ * - SKILL.md from skills/<name>/
+ * - Entry files from paths specified in skill.json (no import transformation)
+ *
+ * Unlike OpenCode skills, Claude skills don't use shared utils,
+ * so no import transformation is needed.
+ */
+export async function fetchClaudeSkillFiles(
+  registryUrl: string,
+  skillName: string
+): Promise<FileToInstall[]> {
+  const files: FileToInstall[] = [];
+
+  const skillMdContent = await fetchFile(
+    registryUrl,
+    `skills/${skillName}/SKILL.md`
+  );
+  files.push({ relativePath: "SKILL.md", content: skillMdContent });
+
+  const skillJson = await fetchSkillJson(registryUrl, skillName);
+
+  if (skillJson?.entry) {
+    for (const [outputName, sourcePath] of Object.entries(skillJson.entry)) {
+      const content = await fetchFile(registryUrl, sourcePath);
+      files.push({
+        relativePath: `${outputName}.ts`,
+        content,
+      });
+    }
+  }
+
+  return files;
+}
+
+/**
  * Installs a skill with all its files into .opencode/skill/<name>/
  */
 export async function installSkillFiles(

@@ -5,6 +5,7 @@ import {
   DEFAULT_UTILS_DIR,
   NEW_CONFIG_PATH,
   LEGACY_CONFIG_PATH,
+  CLAUDE_CONFIG_PATH,
   type SkzConfig,
 } from "../types.ts";
 
@@ -118,4 +119,20 @@ export function createDefaultConfig(): SkzConfig {
     registries: [DEFAULT_REGISTRY],
     utils: DEFAULT_UTILS_DIR,
   };
+}
+
+/**
+ * Check if Claude config exists at .claude/skz.json
+ */
+export async function claudeConfigExists(): Promise<boolean> {
+  const file = Bun.file(CLAUDE_CONFIG_PATH);
+  return file.exists();
+}
+
+/**
+ * Write config to Claude location (.claude/skz.json)
+ */
+export async function writeClaudeConfig(config: SkzConfig): Promise<void> {
+  await mkdir(dirname(CLAUDE_CONFIG_PATH), { recursive: true });
+  await Bun.write(CLAUDE_CONFIG_PATH, JSON.stringify(config, null, 2) + "\n");
 }

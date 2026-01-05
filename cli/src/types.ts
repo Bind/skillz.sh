@@ -2,6 +2,7 @@ export interface SkzConfig {
   $schema?: string;
   registries: string[];
   utils: string;
+  target?: SkillTarget;
 }
 
 export interface RegistrySkill {
@@ -74,3 +75,9 @@ export const LEGACY_CONFIG_PATH = "skz.json";
 export const SKILLS_DIR = ".opencode/skill";
 export const AGENTS_DIR = ".opencode/agent";
 export const OPENCODE_CONFIG_FILE = "opencode.json";
+
+export const CLAUDE_DIR = ".claude";
+export const CLAUDE_SKILLS_DIR = ".claude/skills";
+export const CLAUDE_CONFIG_PATH = ".claude/skz.json";
+
+export type SkillTarget = "opencode" | "claude" | "auto";

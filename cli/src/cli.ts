@@ -3,63 +3,34 @@
 import { init } from "./commands/init.ts";
 import { list } from "./commands/list.ts";
 import { add } from "./commands/add.ts";
-import { agents } from "./commands/agents.ts";
 import { migrate } from "./commands/migrate.ts";
-import { runAgentsTui } from "./tui/agents.ts";
 
 const VERSION = "0.0.6";
 
 const HELP = `
-skz - OpenCode skill manager
+skz - Skill manager for OpenCode and Claude
 
 Usage: skz <command> [options]
 
 Commands:
-  init                Initialize skillz in current directory
-  list                List available skills from registries
-  add [skills...]     Add skills to your project
-  agents <subcmd>     Manage agents (add, list, permissions)
-  migrate             Migrate legacy config to .opencode/
-  interactive         Interactive TUI for managing agents and skills
-  i                   Alias for interactive
+  init [--claude]         Initialize skillz in current directory
+  list                    List available skills from registries
+  add [skills...]         Add skills to your project
+  migrate                 Migrate legacy config to .opencode/
 
 Options:
-  -h, --help          Show this help message
-  -v, --version       Show version number
+  -h, --help              Show this help message
+  -v, --version           Show version number
 
-Agents Command:
-  skz agents <subcommand> [options]
-
-  Subcommands:
-    list                              List agents available from registries
-    add [agents...]                   Add prebuilt agents from registries
-    installed [--global]              List installed agents
-    show <agent> [--global]           Show agent's skill permissions
-    set <agent> <skill> <perm>        Set permission (allow|deny|ask)
-    enable <agent> <skill>            Enable skill (set to allow)
-    disable <agent> <skill>           Disable skill (set to deny)
-
-  Options:
-    --global, -g                      Use global agents (~/.config/opencode/agent/)
-
-Interactive Command:
-  skz interactive [--global]
-  skz i [--global]
-
-  Launch TUI for managing agent skill permissions.
-  Use --global or -g for global agents.
+Init Command:
+  skz init                Auto-detect OpenCode or Claude directories
+  skz init --claude       Force Claude mode (creates .claude/skills/)
 
 Examples:
-  skz init                            Initialize skillz in your project
-  skz list                            List all available skills
-  skz add code-review                 Add a specific skill
-  skz add                             Interactive skill picker
-  skz agents list                     List available agents from registries
-  skz agents add docs                 Add the docs agent
-  skz agents installed                List installed project agents
-  skz agents installed --global       List installed global agents
-  skz i                               Launch interactive TUI
-  skz interactive --global            TUI for global agents
+  skz init                Initialize skillz in your project
+  skz list                List all available skills
+  skz add code-review     Add a specific skill
+  skz add                 Interactive skill picker
 `;
 
 async function main(): Promise<void> {
@@ -77,9 +48,12 @@ async function main(): Promise<void> {
   }
 
   switch (command) {
-    case "init":
-      await init();
+    case "init": {
+      const initArgs = args.slice(1);
+      const isClaude = initArgs.includes("--claude");
+      await init(isClaude);
       break;
+    }
 
     case "list":
       await list();
@@ -91,24 +65,9 @@ async function main(): Promise<void> {
       break;
     }
 
-    case "agents": {
-      const agentArgs = args.slice(1);
-      await agents(agentArgs);
-      break;
-    }
-
     case "migrate":
       await migrate();
       break;
-
-    case "interactive":
-    case "i": {
-      const interactiveArgs = args.slice(1);
-      const isGlobal =
-        interactiveArgs.includes("--global") || interactiveArgs.includes("-g");
-      await runAgentsTui(isGlobal);
-      break;
-    }
 
     default:
       console.error(`Unknown command: ${command}`);
