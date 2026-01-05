@@ -1,4 +1,5 @@
 {
+  "domain": "linear",
   "entry": {
     "create-project": "src/linear/create-project.ts",
     "update-project": "src/linear/update-project.ts"

@@ -1,4 +1,5 @@
 {
+  "domain": "terminal",
   "entry": {
     "list-sessions": "src/tmux/list-sessions.ts",
     "create-session": "src/tmux/create-session.ts",

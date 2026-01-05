@@ -1,4 +1,5 @@
 {
+  "domain": "browser",
   "entry": {
     "session": "src/playwright/session.ts",
     "navigate": "src/playwright/navigate.ts",

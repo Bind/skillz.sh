@@ -1,5 +1,6 @@
 import { findConfig } from "../lib/config.ts";
 import { fetchAllSkills } from "../lib/registry.ts";
+import type { RegistrySkill } from "../types.ts";
 
 export async function list(): Promise<void> {
   const configResult = await findConfig();
@@ -20,22 +21,42 @@ export async function list(): Promise<void> {
     return;
   }
 
+  // Group skills by domain
+  const grouped = new Map<string, RegistrySkill[]>();
+  for (const skill of skills) {
+    const domain = skill.domain ?? "other";
+    const list = grouped.get(domain) ?? [];
+    list.push(skill);
+    grouped.set(domain, list);
+  }
+
+  // Sort domains alphabetically, but put "other" last
+  const domains = [...grouped.keys()].sort((a, b) => {
+    if (a === "other") return 1;
+    if (b === "other") return -1;
+    return a.localeCompare(b);
+  });
+
   // Calculate column widths
   const nameWidth = Math.max(...skills.map((s) => s.name.length), 4);
   const versionWidth = Math.max(...skills.map((s) => s.version.length), 7);
-  const descWidth = Math.max(...skills.map((s) => s.description.length), 11);
 
-  // Print header
-  const header = `${"NAME".padEnd(nameWidth)}  ${"VERSION".padEnd(versionWidth)}  ${"DESCRIPTION".padEnd(descWidth)}`;
-  console.log(header);
-  console.log("-".repeat(header.length));
+  // Print skills grouped by domain
+  for (const domain of domains) {
+    const domainSkills = grouped.get(domain)!;
+    
+    // Print domain header
+    console.log(`${domain.toUpperCase()}`);
+    console.log("-".repeat(domain.length));
 
-  // Print skills
-  for (const skill of skills) {
-    console.log(
-      `${skill.name.padEnd(nameWidth)}  ${skill.version.padEnd(versionWidth)}  ${skill.description}`
-    );
+    // Print skills in this domain
+    for (const skill of domainSkills) {
+      console.log(
+        `  ${skill.name.padEnd(nameWidth)}  ${skill.version.padEnd(versionWidth)}  ${skill.description}`
+      );
+    }
+    console.log();
   }
 
-  console.log(`\n${skills.length} skill(s) available\n`);
+  console.log(`${skills.length} skill(s) available\n`);
 }

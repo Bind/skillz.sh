@@ -1,4 +1,5 @@
 {
+  "domain": "database",
   "entry": {
     "query": "src/psql/query.ts"
   },

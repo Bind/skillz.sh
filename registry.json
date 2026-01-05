@@ -4,47 +4,56 @@
     {
       "name": "linear-milestones-read",
       "description": "List Linear project milestones via CLI (read-only operations)",
-      "version": "1.0.0"
+      "version": "1.0.0",
+      "domain": "linear"
     },
     {
       "name": "linear-issues-read",
       "description": "List and get Linear issues via CLI (read-only operations)",
-      "version": "1.0.0"
+      "version": "1.0.0",
+      "domain": "linear"
     },
     {
       "name": "playwright-browser",
       "description": "Control a Playwright browser via CLI - navigate, interact, and screenshot",
-      "version": "1.0.0"
+      "version": "1.0.0",
+      "domain": "browser"
     },
     {
       "name": "linear-issues-write",
       "description": "Create and update Linear issues via CLI (write operations)",
-      "version": "1.0.0"
+      "version": "1.0.0",
+      "domain": "linear"
     },
     {
       "name": "psql",
       "description": "Run PostgreSQL queries and meta-commands via CLI",
-      "version": "1.0.0"
+      "version": "1.0.0",
+      "domain": "database"
     },
     {
       "name": "linear-projects-read",
       "description": "List and get Linear projects via CLI (read-only operations)",
-      "version": "1.0.0"
+      "version": "1.0.0",
+      "domain": "linear"
     },
     {
       "name": "linear-projects-write",
       "description": "Create and update Linear projects via CLI (write operations)",
-      "version": "1.0.0"
+      "version": "1.0.0",
+      "domain": "linear"
     },
     {
       "name": "tmux",
       "description": "Manage tmux sessions for interactive background processes",
-      "version": "1.0.0"
+      "version": "1.0.0",
+      "domain": "terminal"
     },
     {
       "name": "linear-milestones-write",
       "description": "Create and update Linear project milestones via CLI (write operations)",
-      "version": "1.0.0"
+      "version": "1.0.0",
+      "domain": "linear"
     }
   ],
   "agents": [

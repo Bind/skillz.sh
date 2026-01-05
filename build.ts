@@ -11,6 +11,7 @@ interface ItemMeta {
   name: string;
   description: string;
   version: string;
+  domain?: string;
 }
 
 /**
@@ -53,6 +54,7 @@ function parseFrontmatter(content: string, fileName: string): ItemMeta {
  */
 async function processSkill(skillName: string): Promise<ItemMeta | null> {
   const skillMdPath = join(SKILLS_DIR, skillName, "SKILL.md");
+  const skillJsonPath = join(SKILLS_DIR, skillName, "skill.json");
 
   const skillMdFile = Bun.file(skillMdPath);
   if (!(await skillMdFile.exists())) {
@@ -63,7 +65,20 @@ async function processSkill(skillName: string): Promise<ItemMeta | null> {
   const skillMdContent = await skillMdFile.text();
   const meta = parseFrontmatter(skillMdContent, "SKILL.md");
 
-  console.log(`  ${meta.name} v${meta.version}`);
+  // Read domain from skill.json if it exists
+  const skillJsonFile = Bun.file(skillJsonPath);
+  if (await skillJsonFile.exists()) {
+    try {
+      const skillJson = (await skillJsonFile.json()) as { domain?: string };
+      if (skillJson.domain) {
+        meta.domain = skillJson.domain;
+      }
+    } catch {
+      // Ignore JSON parse errors
+    }
+  }
+
+  console.log(`  ${meta.name} v${meta.version}${meta.domain ? ` [${meta.domain}]` : ""}`);
 
   return meta;
 }
@@ -144,6 +159,7 @@ async function build(): Promise<void> {
       name: s.name,
       description: s.description,
       version: s.version,
+      ...(s.domain && { domain: s.domain }),
     })),
     agents: agents.map((a) => ({
       name: a.name,

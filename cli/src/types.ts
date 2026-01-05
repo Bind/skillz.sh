@@ -9,6 +9,7 @@ export interface RegistrySkill {
   name: string;
   description: string;
   version: string;
+  domain?: string;
 }
 
 export interface RegistryAgent {
@@ -49,6 +50,8 @@ export interface OpencodeConfig {
 }
 
 export interface SkillJson {
+  /** Domain for grouping skills (e.g., "linear", "browser", "database") */
+  domain?: string;
   /** Entry points: output name -> source file path */
   entry: Record<string, string>;
   /** Required utils (e.g., ["utils", "linear"]) */

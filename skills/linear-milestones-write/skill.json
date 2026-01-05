@@ -1,4 +1,5 @@
 {
+  "domain": "linear",
   "entry": {
     "create-milestone": "src/linear/create-milestone.ts",
     "update-milestone": "src/linear/update-milestone.ts"
