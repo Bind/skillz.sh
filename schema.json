@@ -1,0 +1,42 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://raw.githubusercontent.com/Bind/skillz.sh/main/schema.json",
+  "title": "skz.json",
+  "description": "Configuration file for skillz.sh - OpenCode skill manager",
+  "type": "object",
+  "required": ["registries", "utils"],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "JSON Schema reference"
+    },
+    "registries": {
+      "type": "array",
+      "description": "List of skill registries to fetch from",
+      "items": {
+        "type": "string",
+        "description": "Registry URL in format 'github:owner/repo' or 'github:owner/repo@branch'"
+      },
+      "minItems": 1,
+      "default": ["github:Bind/skillz.sh"],
+      "examples": [
+        ["github:Bind/skillz.sh"],
+        ["github:Bind/skillz.sh", "github:myorg/my-skills"]
+      ]
+    },
+    "utils": {
+      "type": "string",
+      "description": "Path to utils directory, relative to this config file",
+      "default": "./utils",
+      "examples": ["./utils", "../shared-utils"]
+    }
+  },
+  "additionalProperties": false,
+  "examples": [
+    {
+      "$schema": "https://raw.githubusercontent.com/Bind/skillz.sh/main/schema.json",
+      "registries": ["github:Bind/skillz.sh"],
+      "utils": "./utils"
+    }
+  ]
+}

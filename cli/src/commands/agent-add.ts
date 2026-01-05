@@ -1,5 +1,5 @@
 import { checkbox, confirm } from "@inquirer/prompts";
-import { readConfig, createDefaultConfig, writeConfig } from "../lib/config.ts";
+import { findConfig, createDefaultConfig, writeConfig } from "../lib/config.ts";
 import {
   fetchAllAgents,
   fetchAgentFile,
@@ -18,18 +18,30 @@ import {
   type AgentWithRegistry,
 } from "../lib/registry.ts";
 import { addMcpServers } from "../lib/opencode-config.ts";
-import { SKILLS_DIR } from "../types.ts";
+import { OPENCODE_DIR, SKILLS_DIR } from "../types.ts";
 import { mkdir } from "node:fs/promises";
+import { join } from "node:path";
 
 export async function agentAdd(agentNames: string[]): Promise<void> {
-  let config = await readConfig();
+  let configResult = await findConfig();
 
-  if (!config) {
-    config = createDefaultConfig();
+  if (!configResult) {
+    // Auto-initialize if no config exists
+    const config = createDefaultConfig();
     await writeConfig(config);
     await mkdir(SKILLS_DIR, { recursive: true });
-    await mkdir(config.utils, { recursive: true });
+    const utilsDir = join(OPENCODE_DIR, config.utils);
+    await mkdir(utilsDir, { recursive: true });
+
+    // Re-read config to get the full ConfigResult
+    configResult = await findConfig();
+    if (!configResult) {
+      console.error("Failed to initialize config.");
+      process.exit(1);
+    }
   }
+
+  const { config, utilsPath, isLegacy } = configResult;
 
   console.log("\nFetching agents from registries...\n");
 
@@ -136,10 +148,10 @@ export async function agentAdd(agentNames: string[]): Promise<void> {
           if (skillJson?.utils) {
             for (const utilName of skillJson.utils) {
               const utilPath = `${utilName}.ts`;
-              if (!(await utilExists(config.utils, utilPath))) {
+              if (!(await utilExists(utilsPath, utilPath))) {
                 try {
                   const content = await fetchUtilFile(skill.registry, utilPath);
-                  await installUtil(config.utils, utilPath, content);
+                  await installUtil(utilsPath, utilPath, content);
                 } catch {
                   // Skip util errors
                 }
@@ -152,7 +164,7 @@ export async function agentAdd(agentNames: string[]): Promise<void> {
             allAddedDeps.push(...addedDeps);
           }
 
-          const files = await fetchSkillFiles(skill.registry, skill.name);
+          const files = await fetchSkillFiles(skill.registry, skill.name, isLegacy);
           await installSkillFiles(skill.name, files);
           allAddedSkills.push(skill.name);
         }

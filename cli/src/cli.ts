@@ -4,6 +4,7 @@ import { init } from "./commands/init.ts";
 import { list } from "./commands/list.ts";
 import { add } from "./commands/add.ts";
 import { agents } from "./commands/agents.ts";
+import { migrate } from "./commands/migrate.ts";
 import { runAgentsTui } from "./tui/agents.ts";
 
 const VERSION = "0.0.6";
@@ -14,10 +15,11 @@ skz - OpenCode skill manager
 Usage: skz <command> [options]
 
 Commands:
-  init                Initialize skz.json in current directory
+  init                Initialize skillz in current directory
   list                List available skills from registries
   add [skills...]     Add skills to your project
   agents <subcmd>     Manage agents (add, list, permissions)
+  migrate             Migrate legacy config to .opencode/
   interactive         Interactive TUI for managing agents and skills
   i                   Alias for interactive
 
@@ -94,6 +96,10 @@ async function main(): Promise<void> {
       await agents(agentArgs);
       break;
     }
+
+    case "migrate":
+      await migrate();
+      break;
 
     case "interactive":
     case "i": {

@@ -1,13 +1,15 @@
-import { readConfig } from "../lib/config.ts";
+import { findConfig } from "../lib/config.ts";
 import { fetchAllSkills } from "../lib/registry.ts";
 
 export async function list(): Promise<void> {
-  const config = await readConfig();
+  const configResult = await findConfig();
 
-  if (!config) {
+  if (!configResult) {
     console.error("No skz.json found. Run `skz init` first.");
     process.exit(1);
   }
+
+  const { config } = configResult;
 
   console.log("\nFetching skills from registries...\n");
 

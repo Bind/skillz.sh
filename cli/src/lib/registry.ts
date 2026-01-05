@@ -79,24 +79,39 @@ export async function installUtil(
 
 /**
  * Transform import paths for installed skill files.
- * Source files import from ../../utils/ but installed files
- * at .opencode/skill/<name>/ need ../../../utils/
+ *
+ * Source files in src/<skill>/ import from "../../utils/"
+ *
+ * Installed files at .opencode/skill/<name>/ need different paths:
+ * - New config (.opencode/skz.json with utils: "./utils"):
+ *   utils at .opencode/utils/ -> import "../../utils/" (no change needed)
+ * - Legacy config (./skz.json with utils: "utils"):
+ *   utils at ./utils/ -> import "../../../utils/"
  */
-function transformImports(content: string): string {
-  return content.replace(
-    /from ["']\.\.\/\.\.\/utils\//g,
-    'from "../../../utils/'
-  );
+function transformImports(content: string, isLegacyConfig: boolean): string {
+  if (isLegacyConfig) {
+    // Legacy: .opencode/skill/<name>/ needs ../../../utils/ to reach ./utils/
+    return content.replace(
+      /from ["']\.\.\/\.\.\/utils\//g,
+      'from "../../../utils/'
+    );
+  }
+  // New: .opencode/skill/<name>/ needs ../../utils/ to reach .opencode/utils/
+  // Source already uses ../../utils/, so no transformation needed
+  return content;
 }
 
 /**
  * Fetches all files for a skill:
  * - SKILL.md from skills/<name>/
  * - Entry files from paths specified in skill.json (with import transformation)
+ *
+ * @param isLegacyConfig - If true, transforms imports for legacy config location
  */
 export async function fetchSkillFiles(
   registryUrl: string,
-  skillName: string
+  skillName: string,
+  isLegacyConfig: boolean = false
 ): Promise<FileToInstall[]> {
   const files: FileToInstall[] = [];
 
@@ -113,7 +128,7 @@ export async function fetchSkillFiles(
   if (skillJson?.entry) {
     for (const [outputName, sourcePath] of Object.entries(skillJson.entry)) {
       const content = await fetchFile(registryUrl, sourcePath);
-      const transformedContent = transformImports(content);
+      const transformedContent = transformImports(content, isLegacyConfig);
       files.push({
         relativePath: `${outputName}.ts`,
         content: transformedContent,

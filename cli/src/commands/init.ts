@@ -5,9 +5,14 @@ import {
   writeConfig,
 } from "../lib/config.ts";
 import { fetchUtilFile } from "../lib/registry.ts";
-import { SKILLS_DIR, CONFIG_FILE, DEFAULT_REGISTRY } from "../types.ts";
+import {
+  OPENCODE_DIR,
+  SKILLS_DIR,
+  NEW_CONFIG_PATH,
+  DEFAULT_REGISTRY,
+} from "../types.ts";
 import { mkdir } from "node:fs/promises";
-import { join, dirname } from "node:path";
+import { join } from "node:path";
 
 const PACKAGE_JSON = "package.json";
 
@@ -17,7 +22,7 @@ export async function init(): Promise<void> {
   // Check if config already exists
   if (await configExists()) {
     const overwrite = await confirm({
-      message: `${CONFIG_FILE} already exists. Overwrite?`,
+      message: `Config already exists. Overwrite?`,
       default: false,
     });
 
@@ -27,17 +32,21 @@ export async function init(): Promise<void> {
     }
   }
 
-  // Create default config
+  // Create .opencode directory
+  await mkdir(OPENCODE_DIR, { recursive: true });
+
+  // Create default config at .opencode/skz.json
   const config = createDefaultConfig();
   await writeConfig(config);
-  console.log(`Created ${CONFIG_FILE}`);
+  console.log(`Created ${NEW_CONFIG_PATH}`);
 
   // Create skills directory
   await mkdir(SKILLS_DIR, { recursive: true });
   console.log(`Created ${SKILLS_DIR}/`);
 
-  // Create utils directory and copy base utils
-  const utilsDir = config.utils;
+  // Create utils directory at .opencode/utils/
+  // config.utils is "./utils", relative to .opencode/
+  const utilsDir = join(OPENCODE_DIR, config.utils);
   await mkdir(utilsDir, { recursive: true });
   console.log(`Created ${utilsDir}/`);
 
@@ -50,7 +59,7 @@ export async function init(): Promise<void> {
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     console.error(`Warning: Could not fetch utils.ts: ${message}`);
-    console.log("You may need to create utils/utils.ts manually.");
+    console.log(`You may need to create ${utilsDir}/utils.ts manually.`);
   }
 
   // Create or update package.json

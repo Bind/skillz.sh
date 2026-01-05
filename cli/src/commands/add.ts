@@ -1,5 +1,5 @@
 import { checkbox, confirm } from "@inquirer/prompts";
-import { readConfig } from "../lib/config.ts";
+import { findConfig } from "../lib/config.ts";
 import {
   fetchAllSkills,
   fetchSkillFiles,
@@ -14,12 +14,14 @@ import {
 } from "../lib/registry.ts";
 
 export async function add(skillNames: string[]): Promise<void> {
-  const config = await readConfig();
+  const configResult = await findConfig();
 
-  if (!config) {
-    console.error("No skz.json found. Run `skillz init` first.");
+  if (!configResult) {
+    console.error("No skz.json found. Run `skz init` first.");
     process.exit(1);
   }
+
+  const { config, utilsPath, isLegacy } = configResult;
 
   console.log("\nFetching skills from registries...\n");
 
@@ -100,12 +102,12 @@ export async function add(skillNames: string[]): Promise<void> {
       if (skillJson?.utils) {
         for (const utilName of skillJson.utils) {
           const utilPath = `${utilName}.ts`;
-          const exists = await utilExists(config.utils, utilPath);
+          const exists = await utilExists(utilsPath, utilPath);
 
           if (!exists) {
             try {
               const content = await fetchUtilFile(skill.registry, utilPath);
-              await installUtil(config.utils, utilPath, content);
+              await installUtil(utilsPath, utilPath, content);
               allAddedUtils.push(utilPath);
             } catch (error) {
               const message =
@@ -123,7 +125,7 @@ export async function add(skillNames: string[]): Promise<void> {
       }
 
       // Fetch all files for the skill (SKILL.md + entry files with transformed imports)
-      const files = await fetchSkillFiles(skill.registry, skill.name);
+      const files = await fetchSkillFiles(skill.registry, skill.name, isLegacy);
 
       // Install all files
       const installedPaths = await installSkillFiles(skill.name, files);

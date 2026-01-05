@@ -11,7 +11,7 @@ import {
   type AgentLocation,
 } from "../lib/agent.ts";
 import { agentAdd } from "./agent-add.ts";
-import { readConfig } from "../lib/config.ts";
+import { findConfig } from "../lib/config.ts";
 import { fetchAllAgents } from "../lib/registry.ts";
 
 type PermissionValue = "allow" | "deny" | "ask";
@@ -274,12 +274,14 @@ For interactive management, use: skz interactive
 
     case "list": {
       // List agents available from registries
-      const config = await readConfig();
+      const configResult = await findConfig();
 
-      if (!config) {
+      if (!configResult) {
         console.error("No skz.json found. Run `skz init` first.");
         process.exit(1);
       }
+
+      const { config } = configResult;
 
       console.log("\nFetching agents from registries...\n");
 
