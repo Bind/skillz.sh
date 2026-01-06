@@ -1,5 +1,6 @@
 import { select } from "@inquirer/prompts";
-import { NEW_CONFIG_PATH, LEGACY_CONFIG_PATH, CLAUDE_SKILLS_DIR, type SkillTarget } from "../types.ts";
+import { stat } from "node:fs/promises";
+import { NEW_CONFIG_PATH, LEGACY_CONFIG_PATH, CLAUDE_DIR, CLAUDE_SKILLS_DIR, type SkillTarget } from "../types.ts";
 import { readConfig } from "./config.ts";
 
 export interface ProjectConfig {
@@ -10,7 +11,7 @@ export interface ProjectConfig {
 
 export async function detectProjectConfig(): Promise<ProjectConfig> {
   const hasOpenCode = await configExists();
-  const hasClaude = await claudeSkillsExists();
+  const hasClaude = await claudeDirExists();
 
   if (!hasOpenCode && !hasClaude) {
     return { hasOpenCode: false, hasClaude: false, target: "opencode" };
@@ -50,9 +51,13 @@ async function configExists(): Promise<boolean> {
   return legacyFile.exists();
 }
 
-async function claudeSkillsExists(): Promise<boolean> {
-  const dir = Bun.file(CLAUDE_SKILLS_DIR);
-  return dir.exists();
+async function claudeDirExists(): Promise<boolean> {
+  try {
+    const stats = await stat(CLAUDE_DIR);
+    return stats.isDirectory();
+  } catch {
+    return false;
+  }
 }
 
 export function defaultTarget(target: SkillTarget | undefined): "opencode" | "claude" {

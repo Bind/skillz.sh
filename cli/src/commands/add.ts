@@ -1,4 +1,4 @@
-import { checkbox, confirm } from "@inquirer/prompts";
+import { checkbox, confirm, select } from "@inquirer/prompts";
 import { findConfig } from "../lib/config.ts";
 import {
   fetchAllSkills,
@@ -18,6 +18,7 @@ import {
   installClaudeSkill,
   claudeSkillExists,
   ensureClaudeSkillsDir,
+  addClaudeSkillPermissions,
 } from "../lib/claude.ts";
 
 export async function add(skillNames: string[]): Promise<void> {
@@ -57,14 +58,47 @@ async function addOpenCodeSkills(
   let skillsToInstall: SkillWithRegistry[] = [];
 
   if (skillNames.length === 0) {
-    const choices = allSkills.map((skill) => ({
-      name: `${skill.name} (v${skill.version}) - ${skill.description}`,
+    // Group skills by domain
+    const grouped = new Map<string, SkillWithRegistry[]>();
+    for (const skill of allSkills) {
+      const domain = skill.domain ?? "other";
+      const list = grouped.get(domain) ?? [];
+      list.push(skill);
+      grouped.set(domain, list);
+    }
+
+    // Sort domains alphabetically, "other" last
+    const domains = [...grouped.keys()].sort((a, b) => {
+      if (a === "other") return 1;
+      if (b === "other") return -1;
+      return a.localeCompare(b);
+    });
+
+    // Step 1: Select a domain
+    const domainChoices = domains.map((domain) => {
+      const skills = grouped.get(domain)!;
+      return {
+        name: `${domain} (${skills.length} skill${skills.length === 1 ? "" : "s"})`,
+        value: domain,
+      };
+    });
+
+    const selectedDomain = await select({
+      message: "Select a domain:",
+      choices: domainChoices,
+    });
+
+    // Step 2: Select skills from that domain (all checked by default)
+    const domainSkills = grouped.get(selectedDomain)!;
+    const skillChoices = domainSkills.map((skill) => ({
+      name: `${skill.name} - ${skill.description}`,
       value: skill,
+      checked: true,
     }));
 
     const selected = await checkbox({
-      message: "Select skills to install:",
-      choices,
+      message: `Select ${selectedDomain} skills to install:`,
+      choices: skillChoices,
     });
 
     if (selected.length === 0) {
@@ -165,7 +199,7 @@ async function addOpenCodeSkills(
 }
 
 async function addClaudeSkills(
-  skillNames: string[],
+  args: string[],
   config: { registries: string[] }
 ): Promise<void> {
   await ensureClaudeSkillsDir();
@@ -179,17 +213,54 @@ async function addClaudeSkills(
     return;
   }
 
+  // Group skills by domain
+  const grouped = new Map<string, SkillWithRegistry[]>();
+  for (const skill of allSkills) {
+    const domain = skill.domain ?? "other";
+    const list = grouped.get(domain) ?? [];
+    list.push(skill);
+    grouped.set(domain, list);
+  }
+
+  const domains = [...grouped.keys()];
+
   let skillsToInstall: SkillWithRegistry[] = [];
 
-  if (skillNames.length === 0) {
-    const choices = allSkills.map((skill) => ({
-      name: `${skill.name} (v${skill.version}) - ${skill.description}`,
+  if (args.length === 0) {
+    // Interactive mode: select domain then skills
+    
+    // Sort domains alphabetically, "other" last
+    const sortedDomains = domains.sort((a, b) => {
+      if (a === "other") return 1;
+      if (b === "other") return -1;
+      return a.localeCompare(b);
+    });
+
+    // Step 1: Select a domain
+    const domainChoices = sortedDomains.map((domain) => {
+      const skills = grouped.get(domain)!;
+      return {
+        name: `${domain} (${skills.length} skill${skills.length === 1 ? "" : "s"})`,
+        value: domain,
+      };
+    });
+
+    const selectedDomain = await select({
+      message: "Select a domain:",
+      choices: domainChoices,
+    });
+
+    // Step 2: Select skills from that domain (all checked by default)
+    const domainSkills = grouped.get(selectedDomain)!;
+    const skillChoices = domainSkills.map((skill) => ({
+      name: `${skill.name} - ${skill.description}`,
       value: skill,
+      checked: true,
     }));
 
     const selected = await checkbox({
-      message: "Select skills to install:",
-      choices,
+      message: `Select ${selectedDomain} skills to install:`,
+      choices: skillChoices,
     });
 
     if (selected.length === 0) {
@@ -198,14 +269,24 @@ async function addClaudeSkills(
     }
 
     skillsToInstall = selected;
+  } else if (args.length === 1 && domains.includes(args[0]!)) {
+    // Domain name passed: install all skills in that domain
+    const domainName = args[0]!;
+    skillsToInstall = grouped.get(domainName)!;
+    console.log(`Installing all ${domainName} skills...`);
   } else {
-    for (const name of skillNames) {
+    // Skill names passed: find each skill
+    for (const name of args) {
       const skill = allSkills.find((s) => s.name === name);
       if (!skill) {
         console.error(`Skill not found: ${name}`);
         console.log(
           "Available skills:",
           allSkills.map((s) => s.name).join(", ")
+        );
+        console.log(
+          "Available domains:",
+          domains.join(", ")
         );
         process.exit(1);
       }
@@ -214,6 +295,9 @@ async function addClaudeSkills(
   }
 
   const allAddedDeps: string[] = [];
+  const requiredEnvVars = new Set<string>();
+  const setupInstructions = new Set<string>();
+  const installedSkillNames: string[] = [];
 
   let installed = 0;
   let skipped = 0;
@@ -244,10 +328,21 @@ async function addClaudeSkills(
         allAddedDeps.push(...added);
       }
 
+      // Collect setup requirements
+      if (skillJson?.setup?.env) {
+        for (const envVar of skillJson.setup.env) {
+          requiredEnvVars.add(envVar);
+        }
+      }
+      if (skillJson?.setup?.instructions) {
+        setupInstructions.add(skillJson.setup.instructions);
+      }
+
       const files = await fetchClaudeSkillFiles(skill.registry, skill.name);
       const installedPaths = await installClaudeSkill(skill.name, files, skillJson ?? undefined);
 
       console.log(`  Installed ${skill.name} (${installedPaths.length} files)`);
+      installedSkillNames.push(skill.name);
       installed++;
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
@@ -257,6 +352,39 @@ async function addClaudeSkills(
 
   console.log(`\nDone! ${installed} installed, ${skipped} skipped.`);
   console.log("Skills installed to .claude/skills/");
+
+  // Configure permissions for installed skills
+  if (installed > 0) {
+    await addClaudeSkillPermissions(installedSkillNames);
+    
+    const readSkills = installedSkillNames.filter((n) => n.endsWith("-read"));
+    const writeSkills = installedSkillNames.filter((n) => n.endsWith("-write"));
+    const otherSkills = installedSkillNames.filter((n) => !n.endsWith("-read") && !n.endsWith("-write"));
+    
+    console.log("\nPermissions configured in .claude/settings.json:");
+    if (readSkills.length > 0) {
+      console.log(`  allow: ${readSkills.join(", ")}`);
+    }
+    if (writeSkills.length > 0 || otherSkills.length > 0) {
+      console.log(`  ask: ${[...writeSkills, ...otherSkills].join(", ")}`);
+    }
+  }
+
+  // Display setup requirements
+  if (requiredEnvVars.size > 0) {
+    console.log("\nRequired environment variables:");
+    for (const envVar of requiredEnvVars) {
+      console.log(`  ${envVar}`);
+    }
+    console.log("\nAdd to your .env file or export in your shell.");
+  }
+
+  if (setupInstructions.size > 0) {
+    console.log("\nSetup:");
+    for (const instruction of setupInstructions) {
+      console.log(`  ${instruction}`);
+    }
+  }
 
   if (allAddedDeps.length > 0) {
     console.log(`\nAdded dependencies: ${allAddedDeps.join(", ")}`);

@@ -49,6 +49,13 @@ export interface OpencodeConfig {
   [key: string]: unknown;
 }
 
+export interface SkillSetup {
+  /** Required environment variables */
+  env?: string[];
+  /** Setup instructions to display after install */
+  instructions?: string;
+}
+
 export interface SkillJson {
   /** Domain for grouping skills (e.g., "linear", "browser", "database") */
   domain?: string;
@@ -58,6 +65,8 @@ export interface SkillJson {
   utils?: string[];
   /** NPM dependencies (e.g., { "@linear/sdk": "^29.0.0" }) */
   dependencies?: Record<string, string>;
+  /** Setup requirements (env vars, instructions) */
+  setup?: SkillSetup;
 }
 
 export interface SkillFrontmatter {
