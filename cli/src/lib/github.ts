@@ -1,24 +1,59 @@
 const DEFAULT_BRANCH = "main";
 
-function parseRegistryUrl(registry: string): { owner: string; repo: string } {
-  // Format: github:owner/repo
-  const match = registry.match(/^github:([^/]+)\/(.+)$/);
-  if (!match) {
-    throw new Error(
-      `Invalid registry format: ${registry}. Expected: github:owner/repo`
-    );
+/**
+ * Registry URL formats:
+ * - github:owner/repo  -> Uses raw.githubusercontent.com
+ * - https://...        -> Direct URL (e.g., https://skillz.sh)
+ */
+
+interface RegistryInfo {
+  type: "github" | "https";
+  baseUrl: string;
+  owner?: string;
+  repo?: string;
+}
+
+function parseRegistry(registry: string): RegistryInfo {
+  // Check for https:// URL format
+  if (registry.startsWith("https://")) {
+    // Remove trailing slash if present
+    const baseUrl = registry.replace(/\/$/, "");
+    return { type: "https", baseUrl };
   }
-  return { owner: match[1]!, repo: match[2]! };
+
+  // Check for github:owner/repo format
+  const match = registry.match(/^github:([^/]+)\/(.+)$/);
+  if (match) {
+    const owner = match[1]!;
+    const repo = match[2]!;
+    return {
+      type: "github",
+      baseUrl: `https://raw.githubusercontent.com/${owner}/${repo}/${DEFAULT_BRANCH}`,
+      owner,
+      repo,
+    };
+  }
+
+  throw new Error(
+    `Invalid registry format: ${registry}. Expected: github:owner/repo or https://...`
+  );
 }
 
 export async function fetchFile(
   registry: string,
   path: string
 ): Promise<string> {
-  const { owner, repo } = parseRegistryUrl(registry);
-  // Add cache buster to avoid GitHub CDN caching stale content
-  const cacheBuster = Date.now();
-  const url = `https://raw.githubusercontent.com/${owner}/${repo}/${DEFAULT_BRANCH}/${path}?_=${cacheBuster}`;
+  const info = parseRegistry(registry);
+
+  let url: string;
+  if (info.type === "https") {
+    // Direct URL - no cache buster needed (Cloudflare handles caching)
+    url = `${info.baseUrl}/${path}`;
+  } else {
+    // GitHub raw - add cache buster to avoid CDN caching stale content
+    const cacheBuster = Date.now();
+    url = `${info.baseUrl}/${path}?_=${cacheBuster}`;
+  }
 
   const response = await fetch(url);
 
@@ -44,14 +79,24 @@ export interface FileInfo {
 }
 
 /**
- * Lists contents of a directory in the repo
+ * Lists contents of a directory in the repo.
+ * Only works with github: registries (uses GitHub API).
+ * For https: registries, we fetch files directly by known paths.
  */
 export async function listDirectory(
   registry: string,
   path: string
 ): Promise<FileInfo[]> {
-  const { owner, repo } = parseRegistryUrl(registry);
-  const url = `https://api.github.com/repos/${owner}/${repo}/contents/${path}?ref=${DEFAULT_BRANCH}`;
+  const info = parseRegistry(registry);
+
+  if (info.type === "https") {
+    throw new Error(
+      "listDirectory is not supported for https:// registries. " +
+      "Use fetchFile with known paths instead."
+    );
+  }
+
+  const url = `https://api.github.com/repos/${info.owner}/${info.repo}/contents/${path}?ref=${DEFAULT_BRANCH}`;
 
   const response = await fetch(url);
 
@@ -85,7 +130,8 @@ export async function listDirectory(
 }
 
 /**
- * Recursively fetches all files in a directory
+ * Recursively fetches all files in a directory.
+ * Only works with github: registries (uses GitHub API).
  */
 export async function fetchDirectoryFiles(
   registry: string,

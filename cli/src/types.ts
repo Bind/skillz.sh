@@ -80,7 +80,7 @@ export interface SkillFrontmatter {
   metadata?: Record<string, string>;
 }
 
-export const DEFAULT_REGISTRY = "github:Bind/skillz.sh";
+export const DEFAULT_REGISTRY = "https://skillz.sh";
 export const DEFAULT_UTILS_DIR = "./utils";
 export const OPENCODE_DIR = ".opencode";
 export const CONFIG_FILE = "skz.json";

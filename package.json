@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "build": "bun run build.ts",
-    "build:clean": "bun run build.ts --clean"
+    "build:clean": "bun run build.ts --clean",
+    "build:publish": "bun run build.ts && bun run publish.ts"
   },
   "devDependencies": {
     "@linear/sdk": "^29.0.0",
