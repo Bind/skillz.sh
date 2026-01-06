@@ -1,6 +1,6 @@
 # skillz.sh
 
-Hackable AI agent skills for [OpenCode](https://opencode.ai). Inspired by [shadcn/ui](https://ui.shadcn.com).
+Hackable AI agent skills for [OpenCode](https://opencode.ai) and [Claude Code](https://docs.anthropic.com/en/docs/claude-code). Inspired by [shadcn/ui](https://ui.shadcn.com).
 
 **Not a package. Not a dependency.** Skills are copied directly into your project where you own the code and can modify it to fit your needs.
 
@@ -22,35 +22,48 @@ bun install -g @bind/skillz
 skz init
 ```
 
-This creates:
+The CLI auto-detects your environment:
 
-- `skz.json` - Registry configuration
-- `.opencode/skill/` - Where skills are installed
-- `utils/` - Shared utilities
+- **Claude Code** (`.claude/` exists) → installs to `.claude/skills/`
+- **OpenCode** → installs to `.opencode/skill/`
 
 ## Usage
 
 ```bash
-# List available skills
+# List available skills (grouped by domain)
 skz list
 
-# Add a skill (copies to your project)
+# Add all skills in a domain
+skz add linear
+
+# Add a specific skill
 skz add linear-issues-read
 
-# Add multiple skills
-skz add linear-issues-read linear-projects-read
-
-# Interactive picker
+# Interactive picker (select domain, then skills)
 skz add
 ```
 
-Skills are installed to `.opencode/skill/<name>/` where [OpenCode automatically discovers them](https://opencode.ai/docs/skills/).
+### Adding a Domain
+
+The easiest way to get started is to add an entire domain:
+
+```bash
+skz add linear
+```
+
+This will:
+1. Install all Linear skills (issues, projects, milestones - read & write)
+2. Configure permissions automatically:
+   - Read skills → `allow` (no prompting)
+   - Write skills → `ask` (prompts before execution)
+3. Add required dependencies to `package.json`
+4. Show setup instructions (e.g., required environment variables)
 
 ## Available Skills
 
-### Linear Integration
+### Linear
 
-CLI tools for managing Linear issues, projects, and milestones. Split into read/write skills for granular permission control.
+CLI tools for managing Linear issues, projects, and milestones.
 
 | Skill                     | Description                                |
 | ------------------------- | ------------------------------------------ |
@@ -61,14 +74,83 @@ CLI tools for managing Linear issues, projects, and milestones. Split into read/
 | `linear-milestones-read`  | List Linear project milestones (read-only) |
 | `linear-milestones-write` | Create and update Linear milestones        |
 
-### Setup
+**Setup:** Add `LINEAR_API_KEY` to your `.env` file. Get your key from Linear Settings > API > Personal API keys.
 
-1. Add `LINEAR_API_KEY=lin_api_...` to your project's `.env` file
-2. Run `skz add linear-issues-read` (or any Linear skill)
+### Browser
 
-### Permission Configuration
+| Skill               | Description                                      |
+| ------------------- | ------------------------------------------------ |
+| `playwright-browser` | Control a browser - navigate, interact, screenshot |
 
-Control which skills your AI agent can use in `opencode.json`:
+### Database
+
+| Skill  | Description                              |
+| ------ | ---------------------------------------- |
+| `psql` | Run PostgreSQL queries and meta-commands |
+
+### Terminal
+
+| Skill  | Description                                  |
+| ------ | -------------------------------------------- |
+| `tmux` | Manage tmux sessions for background processes |
+
+## Project Structure
+
+### Claude Code
+
+```
+your-project/
+├── .claude/
+│   ├── skills/
+│   │   └── linear-issues-read/
+│   │       ├── SKILL.md        # Agent instructions
+│   │       ├── list-issues.ts  # Your code now
+│   │       └── get-issue.ts
+│   ├── settings.json           # Permissions (auto-configured)
+│   └── skz.json                # Registry config
+└── package.json
+```
+
+### OpenCode
+
+```
+your-project/
+├── .opencode/
+│   ├── skill/
+│   │   └── linear-issues-read/
+│   │       ├── SKILL.md
+│   │       ├── list-issues.ts
+│   │       └── get-issue.ts
+│   ├── utils/
+│   │   ├── utils.ts            # Shared helpers
+│   │   └── linear.ts           # Linear SDK wrapper
+│   └── skz.json
+└── package.json
+```
+
+## Permission Configuration
+
+### Claude Code
+
+Permissions are automatically configured in `.claude/settings.json`:
+
+```json
+{
+  "permissions": {
+    "allow": [
+      "Bash(bun .claude/skills/linear-issues-read/*.ts:*)",
+      "Bash(bun .claude/skills/linear-projects-read/*.ts:*)"
+    ],
+    "ask": [
+      "Bash(bun .claude/skills/linear-issues-write/*.ts:*)"
+    ]
+  }
+}
+```
+
+### OpenCode
+
+Configure in `opencode.json`:
 
 ```json
 {
@@ -83,23 +165,7 @@ Control which skills your AI agent can use in `opencode.json`:
 
 ## How It Works
 
-`skz` copies skill source code directly into your project:
-
-```
-your-project/
-├── .opencode/
-│   └── skill/
-│       └── linear-issues-read/
-│           ├── SKILL.md        # Agent instructions
-│           ├── list-issues.ts  # Your code now
-│           └── get-issue.ts
-├── utils/
-│   ├── utils.ts               # Shared helpers
-│   └── linear.ts              # Linear SDK wrapper
-└── skz.json                   # Registry config
-```
-
-You can:
+`skz` copies skill source code directly into your project. You can:
 
 - **Read** the skill code to understand what it does
 - **Modify** it to fit your specific workflow
@@ -109,8 +175,6 @@ You can:
 ## Creating Skills
 
 See [CONTRIBUTING.md](./CONTRIBUTING.md) for details on creating and publishing skills.
-
-Skills follow the [OpenCode Agent Skills](https://opencode.ai/docs/skills/) specification.
 
 ## Contributing
 
