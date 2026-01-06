@@ -14,8 +14,8 @@ interface RegistryInfo {
 }
 
 function parseRegistry(registry: string): RegistryInfo {
-  // Check for https:// URL format
-  if (registry.startsWith("https://")) {
+  // Check for http:// or https:// URL format
+  if (registry.startsWith("http://") || registry.startsWith("https://")) {
     // Remove trailing slash if present
     const baseUrl = registry.replace(/\/$/, "");
     return { type: "https", baseUrl };
@@ -35,7 +35,7 @@ function parseRegistry(registry: string): RegistryInfo {
   }
 
   throw new Error(
-    `Invalid registry format: ${registry}. Expected: github:owner/repo or https://...`
+    `Invalid registry format: ${registry}. Expected: github:owner/repo or http(s)://...`
   );
 }
 

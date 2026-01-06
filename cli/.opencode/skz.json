@@ -1,0 +1,7 @@
+{
+  "$schema": "https://raw.githubusercontent.com/Bind/skillz.sh/main/schema.json",
+  "registries": [
+    "http://skillz.sh"
+  ],
+  "utils": "./utils"
+}
