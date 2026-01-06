@@ -112,9 +112,8 @@ function isHttpRegistry(registry: string): boolean {
  * Fetches all files for a skill:
  * - SKILL.md from skills/<name>/
  * - Entry files from paths specified in skill.json (with import transformation)
- * - Additional files from skill.json files array
- * - Command files from skills/<name>/command/
- * - Agent files from skills/<name>/agent/
+ * - Commands from skill.json commands array (installed to .opencode/command/<name>.md)
+ * - Agents from skill.json agents array (installed to .opencode/agent/<name>.md)
  *
  * @param isLegacyConfig - If true, transforms imports for legacy config location
  */
@@ -146,25 +145,48 @@ export async function fetchSkillFiles(
     }
   }
 
-  // Fetch additional files listed in skill.json files array
-  if (skillJson?.files) {
-    for (const filePath of skillJson.files) {
+  // Fetch commands listed in skill.json commands array
+  // Commands are installed to .opencode/command/<name>.md
+  if (skillJson?.commands) {
+    for (const commandName of skillJson.commands) {
       try {
-        const content = await fetchFile(registryUrl, `skills/${skillName}/${filePath}`);
+        const content = await fetchFile(
+          registryUrl,
+          `skills/${skillName}/command/${commandName}/command.md`
+        );
         // Transform content for OpenCode (remove allowed-tools)
         const transformedContent = transformForOpenCode(content);
         files.push({
-          relativePath: filePath,
+          relativePath: `command/${commandName}.md`,
           content: transformedContent,
         });
       } catch {
-        // Skip if file fetch fails
+        // Skip if command file fetch fails
+      }
+    }
+  }
+
+  // Fetch agents listed in skill.json agents array
+  // Agents are installed to .opencode/agent/<name>.md
+  if (skillJson?.agents) {
+    for (const agentName of skillJson.agents) {
+      try {
+        const content = await fetchFile(
+          registryUrl,
+          `skills/${skillName}/agent/${agentName}.md`
+        );
+        files.push({
+          relativePath: `agent/${agentName}.md`,
+          content,
+        });
+      } catch {
+        // Skip if agent file fetch fails
       }
     }
   }
 
   // For github: format registries, also fetch command/agent directories via GitHub API
-  // This provides backward compatibility for skills that don't use the files array
+  // This provides backward compatibility for skills that don't use the new arrays
   if (!isHttpRegistry(registryUrl)) {
     // Fetch command files
     try {
@@ -174,8 +196,11 @@ export async function fetchSkillFiles(
       );
       for (const file of commandDirContent) {
         const parts = file.relativePath.split("/");
-        const commandName = parts[0];
+        const commandName = parts[0] ?? "";
         const fileName = parts.slice(1).join("/");
+
+        // Skip if already fetched via commands array (prefer new format)
+        if (commandName && skillJson?.commands?.includes(commandName)) continue;
 
         const transformedContent = transformForOpenCode(file.content);
 
@@ -196,7 +221,11 @@ export async function fetchSkillFiles(
       );
       for (const file of agentDirContent) {
         const parts = file.relativePath.split("/");
-        const fileName = parts[parts.length - 1];
+        const fileName = parts[parts.length - 1] ?? "";
+        const agentName = fileName.replace(/\.md$/, "");
+
+        // Skip if already fetched via agents array (prefer new format)
+        if (agentName && skillJson?.agents?.includes(agentName)) continue;
 
         files.push({
           relativePath: `agent/${fileName}`,

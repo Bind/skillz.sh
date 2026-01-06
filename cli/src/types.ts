@@ -69,8 +69,10 @@ export interface SkillJson {
   setup?: SkillSetup;
   /** Required skills that should be installed alongside this one */
   requires?: string[];
-  /** Additional files to install (relative to skill directory) */
-  files?: string[];
+  /** Commands to install (from command/<name>/command.md) */
+  commands?: string[];
+  /** Agents to install (from agent/<name>.md) */
+  agents?: string[];
 }
 
 export interface SkillFrontmatter {
