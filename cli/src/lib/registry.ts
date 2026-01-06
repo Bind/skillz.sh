@@ -1,4 +1,4 @@
-import { fetchFile, fetchJson } from "./github.ts";
+import { fetchFile, fetchJson, fetchDirectoryFiles } from "./github.ts";
 import {
   SKILLS_DIR,
   AGENTS_DIR,
@@ -105,6 +105,8 @@ function transformImports(content: string, isLegacyConfig: boolean): string {
  * Fetches all files for a skill:
  * - SKILL.md from skills/<name>/
  * - Entry files from paths specified in skill.json (with import transformation)
+ * - Command files from skills/<name>/command/
+ * - Agent files from skills/<name>/agent/
  *
  * @param isLegacyConfig - If true, transforms imports for legacy config location
  */
@@ -136,26 +138,88 @@ export async function fetchSkillFiles(
     }
   }
 
+  // Fetch command files (transformed for OpenCode)
+  try {
+    const commandDirContent = await fetchDirectoryFiles(
+      registryUrl,
+      `skills/${skillName}/command`
+    );
+    for (const file of commandDirContent) {
+      // Get the command subdirectory name (e.g., "code_review" from "command/code_review/...")
+      const parts = file.relativePath.split("/");
+      const commandName = parts[0];
+      const fileName = parts.slice(1).join("/");
+
+      // Transform content (remove allowed-tools for OpenCode)
+      const transformedContent = transformForOpenCode(file.content);
+
+      files.push({
+        relativePath: `command/${commandName}/${fileName}`,
+        content: transformedContent,
+      });
+    }
+  } catch {
+    // No command directory, skip
+  }
+
+  // Fetch agent files
+  try {
+    const agentDirContent = await fetchDirectoryFiles(
+      registryUrl,
+      `skills/${skillName}/agent`
+    );
+    for (const file of agentDirContent) {
+      // Get the agent file name (e.g., "reviewer.md" from "agent/reviewer.md")
+      const parts = file.relativePath.split("/");
+      const fileName = parts[parts.length - 1];
+
+      files.push({
+        relativePath: `agent/${fileName}`,
+        content: file.content,
+      });
+    }
+  } catch {
+    // No agent directory, skip
+  }
+
   return files;
 }
 
 /**
  * Transform content for Claude Code installation.
- * Replaces AGENTS.md references with CLAUDE.md.
+ * - Replaces AGENTS.md references with CLAUDE.md
+ * - Removes 'agent:' field from frontmatter (not supported in Claude Code)
  */
 function transformForClaude(content: string): string {
-  return content.replace(/AGENTS\.md/g, "CLAUDE.md");
+  let result = content.replace(/AGENTS\.md/g, "CLAUDE.md");
+  // Remove 'agent:' from frontmatter (Claude Code doesn't support it)
+  result = result.replace(/^agent: .*\n/m, "");
+  return result;
+}
+
+/**
+ * Transform content for OpenCode installation.
+ * - Removes 'allowed-tools:' from frontmatter (OpenCode uses different permission system)
+ */
+function transformForOpenCode(content: string): string {
+  // Remove 'allowed-tools:' from frontmatter (OpenCode uses opencode.json permissions)
+  return content.replace(/^allowed-tools: .*\n/m, "");
 }
 
 /**
  * Fetches all files for a Claude skill:
  * - SKILL.md from skills/<name>/
  * - Entry files from paths specified in skill.json (no import transformation)
+ * - Command files from skills/<name>/command/
+ * - Agent files from skills/<name>/agent/
  *
  * Unlike OpenCode skills, Claude skills don't use shared utils,
  * so no import transformation is needed.
  *
- * Content is transformed to replace AGENTS.md references with CLAUDE.md.
+ * Content is transformed to:
+ * - Replace AGENTS.md references with CLAUDE.md
+ * - Remove 'agent:' field from frontmatter
+ * - Keep 'allowed-tools:' for Claude Code
  */
 export async function fetchClaudeSkillFiles(
   registryUrl: string,
@@ -181,6 +245,50 @@ export async function fetchClaudeSkillFiles(
         content: transformForClaude(content),
       });
     }
+  }
+
+  // Fetch command files (transformed for Claude Code)
+  try {
+    const commandDirContent = await fetchDirectoryFiles(
+      registryUrl,
+      `skills/${skillName}/command`
+    );
+    for (const file of commandDirContent) {
+      // Get the command subdirectory name (e.g., "code_review" from "command/code_review/...")
+      const parts = file.relativePath.split("/");
+      const commandName = parts[0];
+      const fileName = parts.slice(1).join("/");
+
+      // Transform content (AGENTS.md -> CLAUDE.md, remove agent: for Claude)
+      const transformedContent = transformForClaude(file.content);
+
+      files.push({
+        relativePath: `command/${commandName}/${fileName}`,
+        content: transformedContent,
+      });
+    }
+  } catch {
+    // No command directory, skip
+  }
+
+  // Fetch agent files (transformed for Claude Code)
+  try {
+    const agentDirContent = await fetchDirectoryFiles(
+      registryUrl,
+      `skills/${skillName}/agent`
+    );
+    for (const file of agentDirContent) {
+      // Get the agent file name (e.g., "reviewer.md" from "agent/reviewer.md")
+      const parts = file.relativePath.split("/");
+      const fileName = parts[parts.length - 1];
+
+      files.push({
+        relativePath: `agent/${fileName}`,
+        content: transformForClaude(file.content),
+      });
+    }
+  } catch {
+    // No agent directory, skip
   }
 
   return files;

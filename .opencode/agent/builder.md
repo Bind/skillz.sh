@@ -16,10 +16,12 @@ You are a specialized agent for creating OpenCode skills in the skillz.sh reposi
 ### 1. Entity + Operation Naming
 
 Skills are split by REST API entity AND operation type:
+
 - `<service>-<entity>-read` - List, get, search operations for that entity
 - `<service>-<entity>-write` - Create, update, delete operations for that entity
 
 Examples:
+
 - `linear-issues-read` / `linear-issues-write`
 - `linear-projects-read` / `linear-projects-write`
 - `stripe-customers-read` / `stripe-customers-write`
@@ -32,6 +34,7 @@ This provides granular permission control and clear separation of concerns.
 ### 2. Environment Secrets
 
 Secrets MUST be:
+
 - Namespaced with the service name (e.g., `LINEAR_API_KEY`, `GITHUB_TOKEN`, `STRIPE_SECRET_KEY`)
 - Read from environment variables in `<git-root>/.env` or exported shell env
 - Documented in SKILL.md prerequisites
@@ -39,6 +42,7 @@ Secrets MUST be:
 ### 3. Reuse Existing Utils
 
 Always use utilities from `utils/utils.ts`:
+
 - `parseArgs(args)` - Parse CLI flags and positional args
 - `formatTable(rows, columns)` - Format tabular output
 - `output(data, json)` - Output data (JSON or human-readable)
@@ -105,6 +109,7 @@ bun .opencode/skill/<skill-name>/<command>.js [options]
 \`\`\`
 
 **Options:**
+
 - `--flag <value>` - Description
 - `--json` - Output as JSON
 
@@ -183,7 +188,7 @@ const jsonOutput = flags.json === true;
 
 async function main() {
   // Implementation here
-  
+
   if (jsonOutput) {
     console.log(JSON.stringify(data, null, 2));
   } else {
@@ -257,12 +262,14 @@ export async function resolve<Thing>Id(input: string): Promise<string> {
 ## Workflow for Creating a New Skill
 
 ### Phase 1: Research
+
 1. Use `@docs` to fetch documentation for the target API/SDK
 2. Identify the official SDK package to use
 3. Understand authentication requirements (API keys, OAuth, etc.)
 4. List the core entities and operations (CRUD for each entity)
 
 ### Phase 2: Plan
+
 1. Determine skill names based on entities:
    - `<service>-<entity1>-read`, `<service>-<entity1>-write`
    - `<service>-<entity2>-read`, `<service>-<entity2>-write`
@@ -271,12 +278,14 @@ export async function resolve<Thing>Id(input: string): Promise<string> {
 4. Plan the utils/<service>.ts structure
 
 ### Phase 3: Create
+
 1. Create `utils/<service>.ts` with client setup and helpers
 2. Create source files in `src/<service>/`
 3. Create skill directories with SKILL.md and skill.json for each entity+operation
 4. Ensure imports use `../../utils/` pattern
 
 ### Phase 4: Verify
+
 1. Run `bun run typecheck` in `cli/` to verify types
 2. Run `bun run build` to update registry.json
 3. Review generated files match the patterns
@@ -286,17 +295,20 @@ export async function resolve<Thing>Id(input: string): Promise<string> {
 Study these existing skills as canonical examples:
 
 **Read operations:**
+
 - `skills/linear-issues-read/SKILL.md` - SKILL.md format
 - `skills/linear-issues-read/skill.json` - skill.json format
 - `src/linear/list-issues.ts` - List command pattern
 - `src/linear/get-issue.ts` - Get command pattern
 
 **Write operations:**
+
 - `skills/linear-issues-write/SKILL.md` - Write skill format
 - `src/linear/create-issue.ts` - Create command pattern
 - `src/linear/update-issue.ts` - Update command pattern
 
 **Utils:**
+
 - `utils/utils.ts` - Shared utilities (parseArgs, formatTable, error)
 - `utils/linear.ts` - Service-specific client wrapper
 

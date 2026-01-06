@@ -21,6 +21,9 @@ const DOCS_DIR = "docs";
 // Directories to copy to docs/
 const COPY_DIRS = ["skills", "src", "utils", "agents"];
 
+// Per-skill dot directories to copy (e.g., skills/*/.claude, skills/*/.opencode)
+const COPY_DOT_DIRS = [".claude", ".opencode"];
+
 // Files to copy to docs/
 const COPY_FILES = ["registry.json"];
 
@@ -69,6 +72,55 @@ async function copyFiles(): Promise<void> {
 
     await cp(src, dest, { recursive: true });
     console.log(`  ${dir}/`);
+  }
+
+  // Copy per-skill dot directories (.claude, .opencode) within skills/
+  for (const dotDir of COPY_DOT_DIRS) {
+    const srcBase = "skills";
+    const destBase = join(DOCS_DIR, "skills");
+
+    try {
+      const skillDirs = await readdir(srcBase);
+
+      for (const skill of skillDirs) {
+        const srcPath = join(srcBase, skill, dotDir);
+        const destPath = join(destBase, skill, dotDir);
+
+        try {
+          await cp(srcPath, destPath, { recursive: true });
+          console.log(`  skills/${skill}/${dotDir}/`);
+        } catch {
+          // Skip if the dot directory doesn't exist for this skill
+        }
+      }
+    } catch {
+      console.log(`  Skipping ${dotDir}/ in skills/`);
+    }
+  }
+
+  // Copy per-skill directories (command, agent) within skills/
+  const COPY_SKILL_DIRS = ["command", "agent"];
+  for (const skillDir of COPY_SKILL_DIRS) {
+    const srcBase = "skills";
+    const destBase = join(DOCS_DIR, "skills");
+
+    try {
+      const skillDirs = await readdir(srcBase);
+
+      for (const skill of skillDirs) {
+        const srcPath = join(srcBase, skill, skillDir);
+        const destPath = join(destBase, skill, skillDir);
+
+        try {
+          await cp(srcPath, destPath, { recursive: true });
+          console.log(`  skills/${skill}/${skillDir}/`);
+        } catch {
+          // Skip if the directory doesn't exist for this skill
+        }
+      }
+    } catch {
+      console.log(`  Skipping ${skillDir}/ in skills/`);
+    }
   }
 }
 
