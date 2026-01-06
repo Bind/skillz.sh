@@ -1,6 +1,11 @@
-import { fetchFile, fetchJson, fetchDirectoryFiles } from "./github.ts";
+import {
+  fetchFile,
+  fetchJson,
+  fetchDirectoryFiles,
+} from "./github.ts";
 import {
   SKILLS_DIR,
+  COMMANDS_DIR,
   AGENTS_DIR,
   type Registry,
   type RegistrySkill,
@@ -350,7 +355,10 @@ export async function fetchClaudeSkillFiles(
 }
 
 /**
- * Installs a skill with all its files into .opencode/skill/<name>/
+ * Installs a skill with all its files.
+ * - Skill files go to .opencode/skill/<name>/
+ * - Command files go to .opencode/command/<name>.md
+ * - Agent files go to .opencode/agent/<name>.md
  */
 export async function installSkillFiles(
   skillName: string,
@@ -360,7 +368,22 @@ export async function installSkillFiles(
   const installedPaths: string[] = [];
 
   for (const file of files) {
-    const fullPath = join(skillDir, file.relativePath);
+    let fullPath: string;
+
+    // Check if this is a command or agent file
+    if (file.relativePath.startsWith("command/")) {
+      // Command files go to .opencode/command/
+      const commandName = file.relativePath.replace(/^command\//, "");
+      fullPath = join(COMMANDS_DIR, commandName);
+    } else if (file.relativePath.startsWith("agent/")) {
+      // Agent files go to .opencode/agent/
+      const agentName = file.relativePath.replace(/^agent\//, "");
+      fullPath = join(AGENTS_DIR, agentName);
+    } else {
+      // Other files go to .opencode/skill/<name>/
+      fullPath = join(skillDir, file.relativePath);
+    }
+
     const dir = dirname(fullPath);
 
     // Ensure directory exists

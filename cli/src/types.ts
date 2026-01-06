@@ -91,6 +91,7 @@ export const CONFIG_FILE = "skz.json";
 export const NEW_CONFIG_PATH = ".opencode/skz.json";
 export const LEGACY_CONFIG_PATH = "skz.json";
 export const SKILLS_DIR = ".opencode/skill";
+export const COMMANDS_DIR = ".opencode/command";
 export const AGENTS_DIR = ".opencode/agent";
 export const OPENCODE_CONFIG_FILE = "opencode.json";
 
