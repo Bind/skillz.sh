@@ -97,23 +97,23 @@ async function addOpenCodeSkills(
 
   let skillsToInstall: SkillWithRegistry[] = [];
 
+  // Group skills by domain (used for both interactive and domain-name modes)
+  const grouped = new Map<string, SkillWithRegistry[]>();
+  for (const skill of allSkills) {
+    const domain = skill.domain ?? "other";
+    const list = grouped.get(domain) ?? [];
+    list.push(skill);
+    grouped.set(domain, list);
+  }
+
+  // Sort domains alphabetically, "other" last
+  const domains = [...grouped.keys()].sort((a, b) => {
+    if (a === "other") return 1;
+    if (b === "other") return -1;
+    return a.localeCompare(b);
+  });
+
   if (skillNames.length === 0) {
-    // Group skills by domain
-    const grouped = new Map<string, SkillWithRegistry[]>();
-    for (const skill of allSkills) {
-      const domain = skill.domain ?? "other";
-      const list = grouped.get(domain) ?? [];
-      list.push(skill);
-      grouped.set(domain, list);
-    }
-
-    // Sort domains alphabetically, "other" last
-    const domains = [...grouped.keys()].sort((a, b) => {
-      if (a === "other") return 1;
-      if (b === "other") return -1;
-      return a.localeCompare(b);
-    });
-
     // Step 1: Select a domain
     const domainChoices = domains.map((domain) => {
       const skills = grouped.get(domain)!;
@@ -147,7 +147,13 @@ async function addOpenCodeSkills(
     }
 
     skillsToInstall = selected;
+  } else if (skillNames.length === 1 && domains.includes(skillNames[0]!)) {
+    // Domain name passed: install all skills in that domain
+    const domainName = skillNames[0]!;
+    skillsToInstall = grouped.get(domainName)!;
+    console.log(`Installing all ${domainName} skills...`);
   } else {
+    // Skill names passed: find each skill
     for (const name of skillNames) {
       const skill = allSkills.find((s) => s.name === name);
       if (!skill) {
@@ -434,10 +440,13 @@ async function addClaudeSkills(
   }
 
   if (setupInstructions.size > 0) {
-    console.log("\nSetup:");
+    console.log("\n" + "=".repeat(60));
+    console.log("Setup Required:");
+    console.log("=".repeat(60));
     for (const instruction of setupInstructions) {
       console.log(`  ${instruction}`);
     }
+    console.log("=".repeat(60) + "\n");
   }
 
   if (allAddedDeps.length > 0) {
