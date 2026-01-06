@@ -102,9 +102,17 @@ function transformImports(content: string, isLegacyConfig: boolean): string {
 }
 
 /**
+ * Check if a registry URL is http(s) format (not github: format)
+ */
+function isHttpRegistry(registry: string): boolean {
+  return registry.startsWith("http://") || registry.startsWith("https://");
+}
+
+/**
  * Fetches all files for a skill:
  * - SKILL.md from skills/<name>/
  * - Entry files from paths specified in skill.json (with import transformation)
+ * - Additional files from skill.json files array
  * - Command files from skills/<name>/command/
  * - Agent files from skills/<name>/agent/
  *
@@ -124,7 +132,7 @@ export async function fetchSkillFiles(
   );
   files.push({ relativePath: "SKILL.md", content: skillMdContent });
 
-  // Fetch skill.json to get entry points
+  // Fetch skill.json to get entry points and additional files
   const skillJson = await fetchSkillJson(registryUrl, skillName);
 
   if (skillJson?.entry) {
@@ -138,48 +146,66 @@ export async function fetchSkillFiles(
     }
   }
 
-  // Fetch command files (transformed for OpenCode)
-  try {
-    const commandDirContent = await fetchDirectoryFiles(
-      registryUrl,
-      `skills/${skillName}/command`
-    );
-    for (const file of commandDirContent) {
-      // Get the command subdirectory name (e.g., "code_review" from "command/code_review/...")
-      const parts = file.relativePath.split("/");
-      const commandName = parts[0];
-      const fileName = parts.slice(1).join("/");
-
-      // Transform content (remove allowed-tools for OpenCode)
-      const transformedContent = transformForOpenCode(file.content);
-
-      files.push({
-        relativePath: `command/${commandName}/${fileName}`,
-        content: transformedContent,
-      });
+  // Fetch additional files listed in skill.json files array
+  if (skillJson?.files) {
+    for (const filePath of skillJson.files) {
+      try {
+        const content = await fetchFile(registryUrl, `skills/${skillName}/${filePath}`);
+        // Transform content for OpenCode (remove allowed-tools)
+        const transformedContent = transformForOpenCode(content);
+        files.push({
+          relativePath: filePath,
+          content: transformedContent,
+        });
+      } catch {
+        // Skip if file fetch fails
+      }
     }
-  } catch {
-    // No command directory, skip
   }
 
-  // Fetch agent files
-  try {
-    const agentDirContent = await fetchDirectoryFiles(
-      registryUrl,
-      `skills/${skillName}/agent`
-    );
-    for (const file of agentDirContent) {
-      // Get the agent file name (e.g., "reviewer.md" from "agent/reviewer.md")
-      const parts = file.relativePath.split("/");
-      const fileName = parts[parts.length - 1];
+  // For github: format registries, also fetch command/agent directories via GitHub API
+  // This provides backward compatibility for skills that don't use the files array
+  if (!isHttpRegistry(registryUrl)) {
+    // Fetch command files
+    try {
+      const commandDirContent = await fetchDirectoryFiles(
+        registryUrl,
+        `skills/${skillName}/command`
+      );
+      for (const file of commandDirContent) {
+        const parts = file.relativePath.split("/");
+        const commandName = parts[0];
+        const fileName = parts.slice(1).join("/");
 
-      files.push({
-        relativePath: `agent/${fileName}`,
-        content: file.content,
-      });
+        const transformedContent = transformForOpenCode(file.content);
+
+        files.push({
+          relativePath: `command/${commandName}/${fileName}`,
+          content: transformedContent,
+        });
+      }
+    } catch {
+      // No command directory, skip
     }
-  } catch {
-    // No agent directory, skip
+
+    // Fetch agent files
+    try {
+      const agentDirContent = await fetchDirectoryFiles(
+        registryUrl,
+        `skills/${skillName}/agent`
+      );
+      for (const file of agentDirContent) {
+        const parts = file.relativePath.split("/");
+        const fileName = parts[parts.length - 1];
+
+        files.push({
+          relativePath: `agent/${fileName}`,
+          content: file.content,
+        });
+      }
+    } catch {
+      // No agent directory, skip
+    }
   }
 
   return files;

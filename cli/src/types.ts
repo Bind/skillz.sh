@@ -69,6 +69,8 @@ export interface SkillJson {
   setup?: SkillSetup;
   /** Required skills that should be installed alongside this one */
   requires?: string[];
+  /** Additional files to install (relative to skill directory) */
+  files?: string[];
 }
 
 export interface SkillFrontmatter {
