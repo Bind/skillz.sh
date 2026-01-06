@@ -21,6 +21,46 @@ import {
   addClaudeSkillPermissions,
 } from "../lib/claude.ts";
 
+/**
+ * Resolve skill dependencies recursively.
+ * Returns skills in dependency order (dependencies first).
+ */
+async function resolveSkillDependencies(
+  skills: SkillWithRegistry[],
+  allSkills: SkillWithRegistry[],
+  registries: string[]
+): Promise<SkillWithRegistry[]> {
+  const resolved: SkillWithRegistry[] = [];
+  const seen = new Set<string>();
+
+  async function resolve(skill: SkillWithRegistry): Promise<void> {
+    if (seen.has(skill.name)) return;
+    seen.add(skill.name);
+
+    // Check for dependencies in skill.json
+    const skillJson = await fetchSkillJson(skill.registry, skill.name);
+    if (skillJson?.requires) {
+      for (const depName of skillJson.requires) {
+        // Find the dependency in available skills
+        const dep = allSkills.find((s) => s.name === depName);
+        if (dep) {
+          await resolve(dep);
+        } else {
+          console.warn(`  Warning: Required skill '${depName}' not found in registries`);
+        }
+      }
+    }
+
+    resolved.push(skill);
+  }
+
+  for (const skill of skills) {
+    await resolve(skill);
+  }
+
+  return resolved;
+}
+
 export async function add(skillNames: string[]): Promise<void> {
   const configResult = await findConfig();
 
@@ -121,6 +161,13 @@ async function addOpenCodeSkills(
       skillsToInstall.push(skill);
     }
   }
+
+  // Resolve dependencies (adds required skills in correct order)
+  skillsToInstall = await resolveSkillDependencies(
+    skillsToInstall,
+    allSkills,
+    config.registries
+  );
 
   const allAddedUtils: string[] = [];
   const allAddedDeps: string[] = [];
@@ -293,6 +340,13 @@ async function addClaudeSkills(
       skillsToInstall.push(skill);
     }
   }
+
+  // Resolve dependencies (adds required skills in correct order)
+  skillsToInstall = await resolveSkillDependencies(
+    skillsToInstall,
+    allSkills,
+    config.registries
+  );
 
   const allAddedDeps: string[] = [];
   const requiredEnvVars = new Set<string>();

@@ -140,12 +140,22 @@ export async function fetchSkillFiles(
 }
 
 /**
+ * Transform content for Claude Code installation.
+ * Replaces AGENTS.md references with CLAUDE.md.
+ */
+function transformForClaude(content: string): string {
+  return content.replace(/AGENTS\.md/g, "CLAUDE.md");
+}
+
+/**
  * Fetches all files for a Claude skill:
  * - SKILL.md from skills/<name>/
  * - Entry files from paths specified in skill.json (no import transformation)
  *
  * Unlike OpenCode skills, Claude skills don't use shared utils,
  * so no import transformation is needed.
+ *
+ * Content is transformed to replace AGENTS.md references with CLAUDE.md.
  */
 export async function fetchClaudeSkillFiles(
   registryUrl: string,
@@ -157,16 +167,18 @@ export async function fetchClaudeSkillFiles(
     registryUrl,
     `skills/${skillName}/SKILL.md`
   );
-  files.push({ relativePath: "SKILL.md", content: skillMdContent });
+  // Transform for Claude Code (AGENTS.md -> CLAUDE.md)
+  files.push({ relativePath: "SKILL.md", content: transformForClaude(skillMdContent) });
 
   const skillJson = await fetchSkillJson(registryUrl, skillName);
 
   if (skillJson?.entry) {
     for (const [outputName, sourcePath] of Object.entries(skillJson.entry)) {
       const content = await fetchFile(registryUrl, sourcePath);
+      // Transform source files too
       files.push({
         relativePath: `${outputName}.ts`,
-        content,
+        content: transformForClaude(content),
       });
     }
   }

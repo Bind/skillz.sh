@@ -8,6 +8,12 @@
       "domain": "linear"
     },
     {
+      "name": "github-pr",
+      "description": "GitHub PR utilities for code review workflows",
+      "version": "1.0.0",
+      "domain": "github"
+    },
+    {
       "name": "linear-issues-read",
       "description": "List and get Linear issues via CLI (read-only operations)",
       "version": "1.0.0",
@@ -24,6 +30,12 @@
       "description": "Create and update Linear issues via CLI (write operations)",
       "version": "1.0.0",
       "domain": "linear"
+    },
+    {
+      "name": "code-review",
+      "description": "Automated PR code review with multi-agent analysis",
+      "version": "1.0.0",
+      "domain": "github"
     },
     {
       "name": "psql",
