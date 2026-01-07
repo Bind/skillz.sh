@@ -10,7 +10,7 @@
     {
       "name": "github-pr",
       "description": "GitHub PR utilities for code review workflows",
-      "version": "1.0.0",
+      "version": "0.1.0-beta",
       "domain": "github"
     },
     {
@@ -26,6 +26,12 @@
       "domain": "browser"
     },
     {
+      "name": "compound-docs",
+      "description": "Capture solved problems as searchable documentation with pattern detection. This skill auto-triggers when users confirm a fix worked (\"that worked\", \"it's fixed\", \"working now\") or manually via /compound command.",
+      "version": "0.1.0-beta",
+      "domain": "docs"
+    },
+    {
       "name": "linear-issues-write",
       "description": "Create and update Linear issues via CLI (write operations)",
       "version": "1.0.0",
@@ -34,7 +40,7 @@
     {
       "name": "code-review",
       "description": "Automated PR code review with multi-agent analysis",
-      "version": "1.0.0",
+      "version": "0.1.0-beta",
       "domain": "github"
     },
     {
