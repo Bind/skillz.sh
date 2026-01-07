@@ -331,7 +331,10 @@
       "version": "1.0.0",
       "files": [
         "agent.md",
-        "agent.json"
+        "demo.tape",
+        "agent.json",
+        "opencode.json",
+        "demo.mp4"
       ],
       "mcp": {
         "context7": {
@@ -342,7 +345,8 @@
           "type": "remote",
           "url": "https://mcp.grep.app"
         }
-      }
+      },
+      "demo": "demo.mp4"
     }
   ],
   "utils": [
