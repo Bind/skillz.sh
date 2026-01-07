@@ -1,9 +1,11 @@
 name: Purge Cloudflare Cache
 
 on:
-  push:
-    branches:
-      - main
+  # Trigger after GitHub Pages deployment completes
+  workflow_run:
+    workflows: ["pages-build-deployment"]
+    types:
+      - completed
   workflow_dispatch:
 
 # Restrict permissions to minimum required
@@ -12,9 +14,10 @@ permissions: {}
 jobs:
   purge:
     runs-on: ubuntu-latest
-    # Only run if triggered by push (not pull_request)
-    # and only for the main repository (not forks)
-    if: github.event_name == 'push' && github.repository == 'Bind/skillz.sh'
+    # Only run if Pages deployment succeeded and for the main repository
+    if: |
+      (github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success') &&
+      github.repository == 'Bind/skillz.sh'
     steps:
       - name: Purge Cloudflare cache
         env:
