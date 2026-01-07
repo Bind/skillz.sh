@@ -20,6 +20,29 @@ import {
   ensureClaudeSkillsDir,
   addClaudeSkillPermissions,
 } from "../lib/claude.ts";
+import { runSetupPrompts, writeSkillConfig } from "../lib/prompts.ts";
+import type { SkillJson } from "../types.ts";
+
+/**
+ * Run setup prompts for a skill if defined.
+ */
+async function runSkillSetupPrompts(
+  skillJson: SkillJson | null,
+  skillName: string
+): Promise<void> {
+  if (!skillJson?.setup?.prompts || skillJson.setup.prompts.length === 0) {
+    return;
+  }
+
+  console.log(`\n  Configuring ${skillName}...\n`);
+
+  const answers = await runSetupPrompts(skillJson.setup.prompts);
+
+  if (skillJson.setup.configFile) {
+    await writeSkillConfig(skillJson.setup.configFile, answers);
+    console.log(`\n  Configuration saved to ${skillJson.setup.configFile}`);
+  }
+}
 
 /**
  * Resolve skill dependencies recursively.
@@ -231,6 +254,9 @@ async function addOpenCodeSkills(
 
       console.log(`  Installed ${skill.name} (${installedPaths.length} files)`);
       installed++;
+
+      // Run setup prompts if defined
+      await runSkillSetupPrompts(skillJson, skill.name);
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       console.error(`  Failed to install ${skill.name}: ${message}`);
@@ -404,6 +430,9 @@ async function addClaudeSkills(
       console.log(`  Installed ${skill.name} (${installedPaths.length} files)`);
       installedSkillNames.push(skill.name);
       installed++;
+
+      // Run setup prompts if defined
+      await runSkillSetupPrompts(skillJson, skill.name);
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       console.error(`  Failed to install ${skill.name}: ${message}`);

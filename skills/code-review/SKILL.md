@@ -1,7 +1,7 @@
 ---
 name: code-review
 description: Automated PR code review with multi-agent analysis
-version: 1.0.0
+version: 0.1.0-beta
 license: MIT
 compatibility: opencode
 ---

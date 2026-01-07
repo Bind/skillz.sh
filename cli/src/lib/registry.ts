@@ -190,6 +190,25 @@ export async function fetchSkillFiles(
     }
   }
 
+  // Fetch additional files listed in skill.json files array
+  // These are installed alongside SKILL.md in the skill directory
+  if (skillJson?.files) {
+    for (const filePath of skillJson.files) {
+      try {
+        const content = await fetchFile(
+          registryUrl,
+          `skills/${skillName}/${filePath}`
+        );
+        files.push({
+          relativePath: filePath,
+          content,
+        });
+      } catch {
+        // Skip if file fetch fails
+      }
+    }
+  }
+
   // For github: format registries, also fetch command/agent directories via GitHub API
   // This provides backward compatibility for skills that don't use the new arrays
   if (!isHttpRegistry(registryUrl)) {
@@ -349,6 +368,24 @@ export async function fetchClaudeSkillFiles(
     }
   } catch {
     // No agent directory, skip
+  }
+
+  // Fetch additional files listed in skill.json files array
+  if (skillJson?.files) {
+    for (const filePath of skillJson.files) {
+      try {
+        const content = await fetchFile(
+          registryUrl,
+          `skills/${skillName}/${filePath}`
+        );
+        files.push({
+          relativePath: filePath,
+          content: transformForClaude(content),
+        });
+      } catch {
+        // Skip if file fetch fails
+      }
+    }
   }
 
   return files;

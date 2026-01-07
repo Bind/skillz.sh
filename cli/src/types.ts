@@ -49,11 +49,37 @@ export interface OpencodeConfig {
   [key: string]: unknown;
 }
 
+export interface SetupPromptChoice {
+  /** Value to store in config */
+  value: string;
+  /** Display name (defaults to value) */
+  name?: string;
+  /** Whether this choice is selected by default (for checkbox) */
+  checked?: boolean;
+}
+
+export interface SetupPrompt {
+  /** Key in output config */
+  name: string;
+  /** Prompt type */
+  type: "input" | "select" | "checkbox" | "confirm";
+  /** Question to display */
+  message: string;
+  /** Default value */
+  default?: string | boolean;
+  /** Choices for select/checkbox types */
+  choices?: SetupPromptChoice[] | string[];
+}
+
 export interface SkillSetup {
   /** Required environment variables */
   env?: string[];
   /** Setup instructions to display after install */
   instructions?: string;
+  /** Interactive prompts to run during setup */
+  prompts?: SetupPrompt[];
+  /** Where to write prompt answers (e.g., ".opencode/compound-docs.yaml") */
+  configFile?: string;
 }
 
 export interface SkillJson {
@@ -61,6 +87,8 @@ export interface SkillJson {
   domain?: string;
   /** Entry points: output name -> source file path */
   entry?: Record<string, string>;
+  /** Additional files to include (e.g., ["schema.yaml", "templates/doc.md"]) */
+  files?: string[];
   /** Required utils (e.g., ["utils", "linear"]) */
   utils?: string[];
   /** NPM dependencies (e.g., { "@linear/sdk": "^29.0.0" }) */
