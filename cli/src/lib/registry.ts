@@ -1,8 +1,4 @@
-import {
-  fetchFile,
-  fetchJson,
-  fetchDirectoryFiles,
-} from "./github.ts";
+import { fetchFile, fetchJson } from "./github.ts";
 import {
   SKILLS_DIR,
   COMMANDS_DIR,
@@ -10,15 +6,13 @@ import {
   type Registry,
   type RegistrySkill,
   type RegistryAgent,
-  type SkillJson,
-  type AgentJson,
 } from "../types.ts";
 import { mkdir } from "node:fs/promises";
 import { join, dirname } from "node:path";
 
-export async function fetchRegistry(registryUrl: string): Promise<Registry> {
-  return fetchJson<Registry>(registryUrl, "registry.json");
-}
+// ============================================================================
+// Types
+// ============================================================================
 
 export interface FileToInstall {
   /** Path relative to skill install directory */
@@ -26,21 +20,35 @@ export interface FileToInstall {
   content: string;
 }
 
-/**
- * Fetches skill.json for a skill from skills/<name>/skill.json
- */
-export async function fetchSkillJson(
-  registryUrl: string,
-  skillName: string
-): Promise<SkillJson | null> {
-  try {
-    return await fetchJson<SkillJson>(
-      registryUrl,
-      `skills/${skillName}/skill.json`
+export interface SkillWithRegistry extends RegistrySkill {
+  registry: string;
+  registryName: string;
+  /** Base path for file fetches (from registry.basePath) */
+  basePath?: string;
+}
+
+export interface AgentWithRegistry extends RegistryAgent {
+  registry: string;
+  registryName: string;
+  /** Base path for file fetches (from registry.basePath) */
+  basePath?: string;
+}
+
+// ============================================================================
+// Registry Fetching
+// ============================================================================
+
+export async function fetchRegistry(registryUrl: string): Promise<Registry> {
+  const registry = await fetchJson<Registry>(registryUrl, "registry.json");
+
+  // Validate registry has required version field (v2 format)
+  if (!registry.version) {
+    throw new Error(
+      `Invalid registry format: missing 'version' field. Registry v2 format required.`
     );
-  } catch {
-    return null;
   }
+
+  return registry;
 }
 
 /**
@@ -48,9 +56,10 @@ export async function fetchSkillJson(
  */
 export async function fetchUtilFile(
   registryUrl: string,
-  utilPath: string
+  utilPath: string,
+  basePath?: string
 ): Promise<string> {
-  return fetchFile(registryUrl, `utils/${utilPath}`);
+  return fetchFile(registryUrl, `utils/${utilPath}`, basePath);
 }
 
 /**
@@ -107,164 +116,6 @@ function transformImports(content: string, isLegacyConfig: boolean): string {
 }
 
 /**
- * Check if a registry URL is http(s) format (not github: format)
- */
-function isHttpRegistry(registry: string): boolean {
-  return registry.startsWith("http://") || registry.startsWith("https://");
-}
-
-/**
- * Fetches all files for a skill:
- * - SKILL.md from skills/<name>/
- * - Entry files from paths specified in skill.json (with import transformation)
- * - Commands from skill.json commands array (installed to .opencode/command/<name>.md)
- * - Agents from skill.json agents array (installed to .opencode/agent/<name>.md)
- *
- * @param isLegacyConfig - If true, transforms imports for legacy config location
- */
-export async function fetchSkillFiles(
-  registryUrl: string,
-  skillName: string,
-  isLegacyConfig: boolean = false
-): Promise<FileToInstall[]> {
-  const files: FileToInstall[] = [];
-
-  // Fetch SKILL.md
-  const skillMdContent = await fetchFile(
-    registryUrl,
-    `skills/${skillName}/SKILL.md`
-  );
-  files.push({ relativePath: "SKILL.md", content: skillMdContent });
-
-  // Fetch skill.json to get entry points and additional files
-  const skillJson = await fetchSkillJson(registryUrl, skillName);
-
-  if (skillJson?.entry) {
-    for (const [outputName, sourcePath] of Object.entries(skillJson.entry)) {
-      const content = await fetchFile(registryUrl, sourcePath);
-      const transformedContent = transformImports(content, isLegacyConfig);
-      files.push({
-        relativePath: `${outputName}.ts`,
-        content: transformedContent,
-      });
-    }
-  }
-
-  // Fetch commands listed in skill.json commands array
-  // Commands are installed to .opencode/command/<name>.md
-  if (skillJson?.commands) {
-    for (const commandName of skillJson.commands) {
-      try {
-        const content = await fetchFile(
-          registryUrl,
-          `skills/${skillName}/command/${commandName}/command.md`
-        );
-        // Transform content for OpenCode (remove allowed-tools)
-        const transformedContent = transformForOpenCode(content);
-        files.push({
-          relativePath: `command/${commandName}.md`,
-          content: transformedContent,
-        });
-      } catch {
-        // Skip if command file fetch fails
-      }
-    }
-  }
-
-  // Fetch agents listed in skill.json agents array
-  // Agents are installed to .opencode/agent/<name>.md
-  if (skillJson?.agents) {
-    for (const agentName of skillJson.agents) {
-      try {
-        const content = await fetchFile(
-          registryUrl,
-          `skills/${skillName}/agent/${agentName}.md`
-        );
-        files.push({
-          relativePath: `agent/${agentName}.md`,
-          content,
-        });
-      } catch {
-        // Skip if agent file fetch fails
-      }
-    }
-  }
-
-  // Fetch additional files listed in skill.json files array
-  // These are installed alongside SKILL.md in the skill directory
-  if (skillJson?.files) {
-    for (const filePath of skillJson.files) {
-      try {
-        const content = await fetchFile(
-          registryUrl,
-          `skills/${skillName}/${filePath}`
-        );
-        files.push({
-          relativePath: filePath,
-          content,
-        });
-      } catch {
-        // Skip if file fetch fails
-      }
-    }
-  }
-
-  // For github: format registries, also fetch command/agent directories via GitHub API
-  // This provides backward compatibility for skills that don't use the new arrays
-  if (!isHttpRegistry(registryUrl)) {
-    // Fetch command files
-    try {
-      const commandDirContent = await fetchDirectoryFiles(
-        registryUrl,
-        `skills/${skillName}/command`
-      );
-      for (const file of commandDirContent) {
-        const parts = file.relativePath.split("/");
-        const commandName = parts[0] ?? "";
-        const fileName = parts.slice(1).join("/");
-
-        // Skip if already fetched via commands array (prefer new format)
-        if (commandName && skillJson?.commands?.includes(commandName)) continue;
-
-        const transformedContent = transformForOpenCode(file.content);
-
-        files.push({
-          relativePath: `command/${commandName}/${fileName}`,
-          content: transformedContent,
-        });
-      }
-    } catch {
-      // No command directory, skip
-    }
-
-    // Fetch agent files
-    try {
-      const agentDirContent = await fetchDirectoryFiles(
-        registryUrl,
-        `skills/${skillName}/agent`
-      );
-      for (const file of agentDirContent) {
-        const parts = file.relativePath.split("/");
-        const fileName = parts[parts.length - 1] ?? "";
-        const agentName = fileName.replace(/\.md$/, "");
-
-        // Skip if already fetched via agents array (prefer new format)
-        if (agentName && skillJson?.agents?.includes(agentName)) continue;
-
-        files.push({
-          relativePath: `agent/${fileName}`,
-          content: file.content,
-        });
-      }
-    } catch {
-      // No agent directory, skip
-    }
-  }
-
-  return files;
-}
-
-/**
  * Transform content for Claude Code installation.
  * - Replaces AGENTS.md references with CLAUDE.md
  * - Removes 'agent:' field from frontmatter (not supported in Claude Code)
@@ -286,11 +137,124 @@ function transformForOpenCode(content: string): string {
 }
 
 /**
- * Fetches all files for a Claude skill:
- * - SKILL.md from skills/<name>/
- * - Entry files from paths specified in skill.json (no import transformation)
- * - Command files from skills/<name>/command/
- * - Agent files from skills/<name>/agent/
+ * Fetches all files for a skill using the registry manifest.
+ *
+ * Uses the skill.files manifest from the registry to know exactly which files to fetch.
+ * No directory listing required - works with any CDN.
+ *
+ * @param registryUrl - Base URL of the registry
+ * @param skill - Full skill entry from registry (includes files manifest and basePath)
+ * @param isLegacyConfig - If true, transforms imports for legacy config location
+ */
+export async function fetchSkillFiles(
+  registryUrl: string,
+  skill: SkillWithRegistry,
+  isLegacyConfig: boolean = false
+): Promise<FileToInstall[]> {
+  const files: FileToInstall[] = [];
+  const skillName = skill.name;
+  const basePath = skill.basePath;
+
+  // Fetch core skill files (SKILL.md, skill.json, etc.)
+  for (const fileName of skill.files.skill) {
+    try {
+      const content = await fetchFile(
+        registryUrl,
+        `skills/${skillName}/${fileName}`,
+        basePath
+      );
+      files.push({ relativePath: fileName, content });
+    } catch {
+      // Skip if file fetch fails (but SKILL.md is required)
+      if (fileName === "SKILL.md") {
+        throw new Error(`Failed to fetch required file: skills/${skillName}/SKILL.md`);
+      }
+    }
+  }
+
+  // Fetch entry point files (TypeScript source files)
+  if (skill.files.entry) {
+    for (const [outputName, sourcePath] of Object.entries(skill.files.entry)) {
+      const content = await fetchFile(registryUrl, sourcePath, basePath);
+      const transformedContent = transformImports(content, isLegacyConfig);
+      files.push({
+        relativePath: `${outputName}.ts`,
+        content: transformedContent,
+      });
+    }
+  }
+
+  // Fetch command files
+  // Commands are installed to .opencode/command/<name>.md
+  if (skill.files.commands) {
+    for (const [commandName, commandFiles] of Object.entries(skill.files.commands)) {
+      for (const fileName of commandFiles) {
+        try {
+          const content = await fetchFile(
+            registryUrl,
+            `skills/${skillName}/command/${commandName}/${fileName}`,
+            basePath
+          );
+          // Transform content for OpenCode (remove allowed-tools)
+          const transformedContent = transformForOpenCode(content);
+          // Flatten command structure: command/code_review/command.md -> command/code_review.md
+          const outputName = fileName === "command.md" ? `${commandName}.md` : `${commandName}/${fileName}`;
+          files.push({
+            relativePath: `command/${outputName}`,
+            content: transformedContent,
+          });
+        } catch {
+          // Skip if command file fetch fails
+        }
+      }
+    }
+  }
+
+  // Fetch agent files
+  // Agents are installed to .opencode/agent/<name>.md
+  if (skill.files.agents) {
+    for (const agentFile of skill.files.agents) {
+      try {
+        const content = await fetchFile(
+          registryUrl,
+          `skills/${skillName}/agent/${agentFile}`,
+          basePath
+        );
+        files.push({
+          relativePath: `agent/${agentFile}`,
+          content,
+        });
+      } catch {
+        // Skip if agent file fetch fails
+      }
+    }
+  }
+
+  // Fetch static files (schema.yaml, README.md, etc.)
+  // These are installed alongside SKILL.md in the skill directory
+  if (skill.files.static) {
+    for (const filePath of skill.files.static) {
+      try {
+        const content = await fetchFile(
+          registryUrl,
+          `skills/${skillName}/${filePath}`,
+          basePath
+        );
+        files.push({
+          relativePath: filePath,
+          content,
+        });
+      } catch {
+        // Skip if file fetch fails
+      }
+    }
+  }
+
+  return files;
+}
+
+/**
+ * Fetches all files for a Claude skill using the registry manifest.
  *
  * Unlike OpenCode skills, Claude skills don't use shared utils,
  * so no import transformation is needed.
@@ -302,23 +266,35 @@ function transformForOpenCode(content: string): string {
  */
 export async function fetchClaudeSkillFiles(
   registryUrl: string,
-  skillName: string
+  skill: SkillWithRegistry
 ): Promise<FileToInstall[]> {
   const files: FileToInstall[] = [];
+  const skillName = skill.name;
+  const basePath = skill.basePath;
 
-  const skillMdContent = await fetchFile(
-    registryUrl,
-    `skills/${skillName}/SKILL.md`
-  );
-  // Transform for Claude Code (AGENTS.md -> CLAUDE.md)
-  files.push({ relativePath: "SKILL.md", content: transformForClaude(skillMdContent) });
+  // Fetch core skill files
+  for (const fileName of skill.files.skill) {
+    try {
+      const content = await fetchFile(
+        registryUrl,
+        `skills/${skillName}/${fileName}`,
+        basePath
+      );
+      files.push({
+        relativePath: fileName,
+        content: transformForClaude(content),
+      });
+    } catch {
+      if (fileName === "SKILL.md") {
+        throw new Error(`Failed to fetch required file: skills/${skillName}/SKILL.md`);
+      }
+    }
+  }
 
-  const skillJson = await fetchSkillJson(registryUrl, skillName);
-
-  if (skillJson?.entry) {
-    for (const [outputName, sourcePath] of Object.entries(skillJson.entry)) {
-      const content = await fetchFile(registryUrl, sourcePath);
-      // Transform source files too
+  // Fetch entry point files (no import transformation for Claude)
+  if (skill.files.entry) {
+    for (const [outputName, sourcePath] of Object.entries(skill.files.entry)) {
+      const content = await fetchFile(registryUrl, sourcePath, basePath);
       files.push({
         relativePath: `${outputName}.ts`,
         content: transformForClaude(content),
@@ -326,57 +302,54 @@ export async function fetchClaudeSkillFiles(
     }
   }
 
-  // Fetch command files (transformed for Claude Code)
-  try {
-    const commandDirContent = await fetchDirectoryFiles(
-      registryUrl,
-      `skills/${skillName}/command`
-    );
-    for (const file of commandDirContent) {
-      // Get the command subdirectory name (e.g., "code_review" from "command/code_review/...")
-      const parts = file.relativePath.split("/");
-      const commandName = parts[0];
-      const fileName = parts.slice(1).join("/");
-
-      // Transform content (AGENTS.md -> CLAUDE.md, remove agent: for Claude)
-      const transformedContent = transformForClaude(file.content);
-
-      files.push({
-        relativePath: `command/${commandName}/${fileName}`,
-        content: transformedContent,
-      });
+  // Fetch command files (keep directory structure for Claude)
+  if (skill.files.commands) {
+    for (const [commandName, commandFiles] of Object.entries(skill.files.commands)) {
+      for (const fileName of commandFiles) {
+        try {
+          const content = await fetchFile(
+            registryUrl,
+            `skills/${skillName}/command/${commandName}/${fileName}`,
+            basePath
+          );
+          files.push({
+            relativePath: `command/${commandName}/${fileName}`,
+            content: transformForClaude(content),
+          });
+        } catch {
+          // Skip if command file fetch fails
+        }
+      }
     }
-  } catch {
-    // No command directory, skip
   }
 
-  // Fetch agent files (transformed for Claude Code)
-  try {
-    const agentDirContent = await fetchDirectoryFiles(
-      registryUrl,
-      `skills/${skillName}/agent`
-    );
-    for (const file of agentDirContent) {
-      // Get the agent file name (e.g., "reviewer.md" from "agent/reviewer.md")
-      const parts = file.relativePath.split("/");
-      const fileName = parts[parts.length - 1];
-
-      files.push({
-        relativePath: `agent/${fileName}`,
-        content: transformForClaude(file.content),
-      });
-    }
-  } catch {
-    // No agent directory, skip
-  }
-
-  // Fetch additional files listed in skill.json files array
-  if (skillJson?.files) {
-    for (const filePath of skillJson.files) {
+  // Fetch agent files
+  if (skill.files.agents) {
+    for (const agentFile of skill.files.agents) {
       try {
         const content = await fetchFile(
           registryUrl,
-          `skills/${skillName}/${filePath}`
+          `skills/${skillName}/agent/${agentFile}`,
+          basePath
+        );
+        files.push({
+          relativePath: `agent/${agentFile}`,
+          content: transformForClaude(content),
+        });
+      } catch {
+        // Skip if agent file fetch fails
+      }
+    }
+  }
+
+  // Fetch static files
+  if (skill.files.static) {
+    for (const filePath of skill.files.static) {
+      try {
+        const content = await fetchFile(
+          registryUrl,
+          `skills/${skillName}/${filePath}`,
+          basePath
         );
         files.push({
           relativePath: filePath,
@@ -440,11 +413,6 @@ export async function skillExists(skillName: string): Promise<boolean> {
   return file.exists();
 }
 
-export interface SkillWithRegistry extends RegistrySkill {
-  registry: string;
-  registryName: string;
-}
-
 export async function fetchAllSkills(
   registries: string[]
 ): Promise<SkillWithRegistry[]> {
@@ -458,6 +426,7 @@ export async function fetchAllSkills(
           ...skill,
           registry: registryUrl,
           registryName: registry.name,
+          basePath: registry.basePath,
         });
       }
     } catch (error) {
@@ -472,11 +441,6 @@ export async function fetchAllSkills(
 // ============================================================================
 // Agent Functions
 // ============================================================================
-
-export interface AgentWithRegistry extends RegistryAgent {
-  registry: string;
-  registryName: string;
-}
 
 /**
  * Fetch all agents from all configured registries
@@ -494,6 +458,7 @@ export async function fetchAllAgents(
           ...agent,
           registry: registryUrl,
           registryName: registry.name,
+          basePath: registry.basePath,
         });
       }
     } catch (error) {
@@ -506,30 +471,32 @@ export async function fetchAllAgents(
 }
 
 /**
- * Fetch agent.md file from agents/<name>/agent.md
+ * Fetch all files for an agent using the registry manifest.
  */
-export async function fetchAgentFile(
+export async function fetchAgentFiles(
   registryUrl: string,
-  agentName: string
-): Promise<string> {
-  return fetchFile(registryUrl, `agents/${agentName}/agent.md`);
-}
+  agent: AgentWithRegistry
+): Promise<FileToInstall[]> {
+  const files: FileToInstall[] = [];
+  const basePath = agent.basePath;
 
-/**
- * Fetch agent.json for an agent from agents/<name>/agent.json
- */
-export async function fetchAgentJson(
-  registryUrl: string,
-  agentName: string
-): Promise<AgentJson | null> {
-  try {
-    return await fetchJson<AgentJson>(
-      registryUrl,
-      `agents/${agentName}/agent.json`
-    );
-  } catch {
-    return null;
+  for (const fileName of agent.files) {
+    try {
+      const content = await fetchFile(
+        registryUrl,
+        `agents/${agent.name}/${fileName}`,
+        basePath
+      );
+      files.push({ relativePath: fileName, content });
+    } catch {
+      // Skip if file fetch fails (but agent.md is required)
+      if (fileName === "agent.md") {
+        throw new Error(`Failed to fetch required file: agents/${agent.name}/agent.md`);
+      }
+    }
   }
+
+  return files;
 }
 
 /**

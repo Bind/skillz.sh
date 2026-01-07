@@ -6,7 +6,7 @@ import {
   writeClaudeConfig,
   claudeConfigExists,
 } from "../lib/config.ts";
-import { fetchUtilFile } from "../lib/registry.ts";
+import { fetchRegistry, fetchUtilFile } from "../lib/registry.ts";
 import { ensureClaudeSkillsDir } from "../lib/claude.ts";
 import {
   OPENCODE_DIR,
@@ -48,6 +48,15 @@ export async function init(forceClaude: boolean = false): Promise<void> {
     ? { ...createDefaultConfig(), target: "claude" as const }
     : createDefaultConfig();
 
+  // Fetch registry to get basePath for utils
+  let basePath: string | undefined;
+  try {
+    const registry = await fetchRegistry(DEFAULT_REGISTRY);
+    basePath = registry.basePath;
+  } catch {
+    // Continue without basePath if registry fetch fails
+  }
+
   if (isClaude) {
     await writeClaudeConfig(config);
     console.log(`Created ${CLAUDE_CONFIG_PATH}`);
@@ -60,7 +69,7 @@ export async function init(forceClaude: boolean = false): Promise<void> {
     console.log(`Created ${utilsDir}/`);
 
     try {
-      const utilsContent = await fetchUtilFile(DEFAULT_REGISTRY, "utils.ts");
+      const utilsContent = await fetchUtilFile(DEFAULT_REGISTRY, "utils.ts", basePath);
       const utilsPath = join(utilsDir, "utils.ts");
       await Bun.write(utilsPath, utilsContent);
       console.log(`Created ${utilsPath}`);
@@ -81,7 +90,7 @@ export async function init(forceClaude: boolean = false): Promise<void> {
     console.log(`Created ${utilsDir}/`);
 
     try {
-      const utilsContent = await fetchUtilFile(DEFAULT_REGISTRY, "utils.ts");
+      const utilsContent = await fetchUtilFile(DEFAULT_REGISTRY, "utils.ts", basePath);
       const utilsPath = join(utilsDir, "utils.ts");
       await Bun.write(utilsPath, utilsContent);
       console.log(`Created ${utilsPath}`);

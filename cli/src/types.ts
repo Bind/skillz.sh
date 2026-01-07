@@ -5,23 +5,62 @@ export interface SkzConfig {
   target?: SkillTarget;
 }
 
+/** File manifest for a skill - all paths relative to skills/<name>/ */
+export interface SkillFiles {
+  /** Core skill files (e.g., ["SKILL.md"]) */
+  skill: string[];
+  /** Command files: command name -> list of files (e.g., { "code_review": ["command.md"] }) */
+  commands?: Record<string, string[]>;
+  /** Agent files (e.g., ["reviewer.md"]) - relative to agent/ */
+  agents?: string[];
+  /** Entry point files: output name -> source path (e.g., { "reviewer": "src/code-review/reviewer.ts" }) */
+  entry?: Record<string, string>;
+  /** Additional static files (e.g., ["schema.yaml", "README.md"]) */
+  static?: string[];
+}
+
+/** Skill entry in registry with full metadata and file manifest */
 export interface RegistrySkill {
   name: string;
   description: string;
   version: string;
   domain?: string;
+  /** Required skills that should be installed alongside this one */
+  requires?: string[];
+  /** Required utils (e.g., ["utils.ts", "linear.ts"]) */
+  utils?: string[];
+  /** NPM dependencies (e.g., { "@linear/sdk": "^29.0.0" }) */
+  dependencies?: Record<string, string>;
+  /** Setup requirements (env vars, instructions, prompts) */
+  setup?: SkillSetup;
+  /** Complete file manifest for CDN hosting */
+  files: SkillFiles;
 }
 
+/** Agent entry in registry with full metadata */
 export interface RegistryAgent {
   name: string;
   description: string;
   version: string;
+  /** Files in agents/<name>/ directory (e.g., ["agent.md", "agent.json"]) */
+  files: string[];
+  /** Required MCP servers */
+  mcp?: Record<string, McpConfig>;
+  /** Required skills to install */
+  skills?: string[];
 }
 
+/** Registry format v2 - CDN-friendly with file manifests */
 export interface Registry {
   name: string;
+  /** Semver version of the registry (required for v2) */
+  version: string;
+  /** Base path for all file fetches (e.g., "registry"). Defaults to "" */
+  basePath?: string;
   skills: RegistrySkill[];
   agents?: RegistryAgent[];
+  /** All available util files (e.g., ["utils.ts", "linear.ts"]) */
+  utils?: string[];
 }
 
 // MCP server configuration (matches opencode.json structure)

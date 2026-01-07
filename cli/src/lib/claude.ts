@@ -1,6 +1,6 @@
 import { mkdir } from "node:fs/promises";
 import { dirname, join } from "node:path";
-import { CLAUDE_DIR, CLAUDE_SKILLS_DIR, type SkillJson } from "../types.ts";
+import { CLAUDE_DIR, CLAUDE_SKILLS_DIR } from "../types.ts";
 
 export interface FileToInstall {
   relativePath: string;
@@ -89,8 +89,7 @@ export async function addClaudeSkillPermissions(skillNames: string[]): Promise<v
 
 export async function installClaudeSkill(
   skillName: string,
-  files: FileToInstall[],
-  _skillJson?: SkillJson
+  files: FileToInstall[]
 ): Promise<string[]> {
   const skillDir = join(CLAUDE_SKILLS_DIR, skillName);
   const installedPaths: string[] = [];

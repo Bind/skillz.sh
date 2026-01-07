@@ -22,7 +22,6 @@ import { readConfig, createDefaultConfig, writeConfig } from "../lib/config.ts";
 import {
   fetchAllSkills,
   fetchSkillFiles,
-  fetchSkillJson,
   fetchUtilFile,
   installSkillFiles,
   installUtil,
@@ -469,15 +468,14 @@ async function installSkill(skill: SkillWithRegistry): Promise<boolean> {
       await mkdir(config.utils, { recursive: true });
     }
 
-    const skillJson = await fetchSkillJson(skill.registry, skill.name);
-
-    if (skillJson?.utils) {
-      for (const utilName of skillJson.utils) {
+    // Install utils (from registry manifest)
+    if (skill.utils) {
+      for (const utilName of skill.utils) {
         const utilPath = `${utilName}.ts`;
         const exists = await utilExists(config.utils, utilPath);
         if (!exists) {
           try {
-            const content = await fetchUtilFile(skill.registry, utilPath);
+            const content = await fetchUtilFile(skill.registry, utilPath, skill.basePath);
             await installUtil(config.utils, utilPath, content);
           } catch {
             // Skip util errors
@@ -486,11 +484,13 @@ async function installSkill(skill: SkillWithRegistry): Promise<boolean> {
       }
     }
 
-    if (skillJson?.dependencies) {
-      await updatePackageJson(skillJson.dependencies);
+    // Add dependencies (from registry manifest)
+    if (skill.dependencies) {
+      await updatePackageJson(skill.dependencies);
     }
 
-    const files = await fetchSkillFiles(skill.registry, skill.name);
+    // Fetch and install skill files using registry manifest
+    const files = await fetchSkillFiles(skill.registry, skill);
     await installSkillFiles(skill.name, files);
 
     return true;

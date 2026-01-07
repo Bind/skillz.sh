@@ -3,7 +3,6 @@ import { findConfig } from "../lib/config.ts";
 import {
   fetchAllSkills,
   fetchSkillFiles,
-  fetchSkillJson,
   fetchUtilFile,
   fetchClaudeSkillFiles,
   installSkillFiles,
@@ -21,26 +20,26 @@ import {
   addClaudeSkillPermissions,
 } from "../lib/claude.ts";
 import { runSetupPrompts, writeSkillConfig } from "../lib/prompts.ts";
-import type { SkillJson } from "../types.ts";
+import type { SkillSetup } from "../types.ts";
 
 /**
  * Run setup prompts for a skill if defined.
  */
 async function runSkillSetupPrompts(
-  skillJson: SkillJson | null,
+  setup: SkillSetup | undefined,
   skillName: string
 ): Promise<void> {
-  if (!skillJson?.setup?.prompts || skillJson.setup.prompts.length === 0) {
+  if (!setup?.prompts || setup.prompts.length === 0) {
     return;
   }
 
   console.log(`\n  Configuring ${skillName}...\n`);
 
-  const answers = await runSetupPrompts(skillJson.setup.prompts);
+  const answers = await runSetupPrompts(setup.prompts);
 
-  if (skillJson.setup.configFile) {
-    await writeSkillConfig(skillJson.setup.configFile, answers);
-    console.log(`\n  Configuration saved to ${skillJson.setup.configFile}`);
+  if (setup.configFile) {
+    await writeSkillConfig(setup.configFile, answers);
+    console.log(`\n  Configuration saved to ${setup.configFile}`);
   }
 }
 
@@ -48,26 +47,24 @@ async function runSkillSetupPrompts(
  * Resolve skill dependencies recursively.
  * Returns skills in dependency order (dependencies first).
  */
-async function resolveSkillDependencies(
+function resolveSkillDependencies(
   skills: SkillWithRegistry[],
-  allSkills: SkillWithRegistry[],
-  registries: string[]
-): Promise<SkillWithRegistry[]> {
+  allSkills: SkillWithRegistry[]
+): SkillWithRegistry[] {
   const resolved: SkillWithRegistry[] = [];
   const seen = new Set<string>();
 
-  async function resolve(skill: SkillWithRegistry): Promise<void> {
+  function resolve(skill: SkillWithRegistry): void {
     if (seen.has(skill.name)) return;
     seen.add(skill.name);
 
-    // Check for dependencies in skill.json
-    const skillJson = await fetchSkillJson(skill.registry, skill.name);
-    if (skillJson?.requires) {
-      for (const depName of skillJson.requires) {
+    // Check for dependencies from registry (no need to fetch skill.json)
+    if (skill.requires) {
+      for (const depName of skill.requires) {
         // Find the dependency in available skills
         const dep = allSkills.find((s) => s.name === depName);
         if (dep) {
-          await resolve(dep);
+          resolve(dep);
         } else {
           console.warn(`  Warning: Required skill '${depName}' not found in registries`);
         }
@@ -78,7 +75,7 @@ async function resolveSkillDependencies(
   }
 
   for (const skill of skills) {
-    await resolve(skill);
+    resolve(skill);
   }
 
   return resolved;
@@ -192,11 +189,7 @@ async function addOpenCodeSkills(
   }
 
   // Resolve dependencies (adds required skills in correct order)
-  skillsToInstall = await resolveSkillDependencies(
-    skillsToInstall,
-    allSkills,
-    config.registries
-  );
+  skillsToInstall = resolveSkillDependencies(skillsToInstall, allSkills);
 
   const allAddedUtils: string[] = [];
   const allAddedDeps: string[] = [];
@@ -223,16 +216,15 @@ async function addOpenCodeSkills(
     try {
       console.log(`  Installing ${skill.name}...`);
 
-      const skillJson = await fetchSkillJson(skill.registry, skill.name);
-
-      if (skillJson?.utils) {
-        for (const utilName of skillJson.utils) {
+      // Install utils (from registry manifest)
+      if (skill.utils) {
+        for (const utilName of skill.utils) {
           const utilPath = `${utilName}.ts`;
           const exists = await utilExists(utilsPath, utilPath);
 
           if (!exists) {
             try {
-              const content = await fetchUtilFile(skill.registry, utilPath);
+              const content = await fetchUtilFile(skill.registry, utilPath, skill.basePath);
               await installUtil(utilsPath, utilPath, content);
               allAddedUtils.push(utilPath);
             } catch (error) {
@@ -244,19 +236,21 @@ async function addOpenCodeSkills(
         }
       }
 
-      if (skillJson?.dependencies) {
-        const added = await updatePackageJson(skillJson.dependencies);
+      // Add dependencies (from registry manifest)
+      if (skill.dependencies) {
+        const added = await updatePackageJson(skill.dependencies);
         allAddedDeps.push(...added);
       }
 
-      const files = await fetchSkillFiles(skill.registry, skill.name, isLegacy);
+      // Fetch and install skill files using registry manifest
+      const files = await fetchSkillFiles(skill.registry, skill, isLegacy);
       const installedPaths = await installSkillFiles(skill.name, files);
 
       console.log(`  Installed ${skill.name} (${installedPaths.length} files)`);
       installed++;
 
-      // Run setup prompts if defined
-      await runSkillSetupPrompts(skillJson, skill.name);
+      // Run setup prompts if defined (from registry manifest)
+      await runSkillSetupPrompts(skill.setup, skill.name);
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       console.error(`  Failed to install ${skill.name}: ${message}`);
@@ -374,11 +368,7 @@ async function addClaudeSkills(
   }
 
   // Resolve dependencies (adds required skills in correct order)
-  skillsToInstall = await resolveSkillDependencies(
-    skillsToInstall,
-    allSkills,
-    config.registries
-  );
+  skillsToInstall = resolveSkillDependencies(skillsToInstall, allSkills);
 
   const allAddedDeps: string[] = [];
   const requiredEnvVars = new Set<string>();
@@ -407,32 +397,32 @@ async function addClaudeSkills(
     try {
       console.log(`  Installing ${skill.name} to .claude/skills/...`);
 
-      const skillJson = await fetchSkillJson(skill.registry, skill.name);
-
-      if (skillJson?.dependencies) {
-        const added = await updatePackageJson(skillJson.dependencies);
+      // Add dependencies (from registry manifest)
+      if (skill.dependencies) {
+        const added = await updatePackageJson(skill.dependencies);
         allAddedDeps.push(...added);
       }
 
-      // Collect setup requirements
-      if (skillJson?.setup?.env) {
-        for (const envVar of skillJson.setup.env) {
+      // Collect setup requirements (from registry manifest)
+      if (skill.setup?.env) {
+        for (const envVar of skill.setup.env) {
           requiredEnvVars.add(envVar);
         }
       }
-      if (skillJson?.setup?.instructions) {
-        setupInstructions.add(skillJson.setup.instructions);
+      if (skill.setup?.instructions) {
+        setupInstructions.add(skill.setup.instructions);
       }
 
-      const files = await fetchClaudeSkillFiles(skill.registry, skill.name);
-      const installedPaths = await installClaudeSkill(skill.name, files, skillJson ?? undefined);
+      // Fetch and install skill files using registry manifest
+      const files = await fetchClaudeSkillFiles(skill.registry, skill);
+      const installedPaths = await installClaudeSkill(skill.name, files);
 
       console.log(`  Installed ${skill.name} (${installedPaths.length} files)`);
       installedSkillNames.push(skill.name);
       installed++;
 
-      // Run setup prompts if defined
-      await runSkillSetupPrompts(skillJson, skill.name);
+      // Run setup prompts if defined (from registry manifest)
+      await runSkillSetupPrompts(skill.setup, skill.name);
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       console.error(`  Failed to install ${skill.name}: ${message}`);

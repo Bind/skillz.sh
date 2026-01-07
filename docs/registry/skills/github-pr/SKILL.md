@@ -1,7 +1,7 @@
 ---
 name: github-pr
 description: GitHub PR utilities for code review workflows
-version: 1.0.0
+version: 0.1.0-beta
 license: MIT
 compatibility: opencode
 ---

@@ -39,36 +39,58 @@ function parseRegistry(registry: string): RegistryInfo {
   );
 }
 
+/**
+ * Fetches a file from a registry.
+ *
+ * @param registry - Registry URL (github:owner/repo or https://...)
+ * @param path - Path to fetch (e.g., "skills/linear/SKILL.md")
+ * @param basePath - Optional base path prefix (e.g., "registry")
+ */
 export async function fetchFile(
   registry: string,
-  path: string
+  path: string,
+  basePath?: string
 ): Promise<string> {
   const info = parseRegistry(registry);
+
+  // Apply basePath prefix if provided
+  const fullPath = basePath ? `${basePath}/${path}` : path;
 
   let url: string;
   if (info.type === "https") {
     // Direct URL - no cache buster needed (Cloudflare handles caching)
-    url = `${info.baseUrl}/${path}`;
+    url = `${info.baseUrl}/${fullPath}`;
   } else {
     // GitHub raw - add cache buster to avoid CDN caching stale content
     const cacheBuster = Date.now();
-    url = `${info.baseUrl}/${path}?_=${cacheBuster}`;
+    url = `${info.baseUrl}/${fullPath}?_=${cacheBuster}`;
   }
 
   const response = await fetch(url);
 
   if (!response.ok) {
     if (response.status === 404) {
-      throw new Error(`File not found: ${path} in ${registry}`);
+      throw new Error(`File not found: ${fullPath} in ${registry}`);
     }
-    throw new Error(`Failed to fetch ${path}: ${response.status} ${response.statusText}`);
+    throw new Error(`Failed to fetch ${fullPath}: ${response.status} ${response.statusText}`);
   }
 
   return response.text();
 }
 
-export async function fetchJson<T>(registry: string, path: string): Promise<T> {
-  const content = await fetchFile(registry, path);
+/**
+ * Fetches JSON from a registry.
+ *
+ * @param registry - Registry URL
+ * @param path - Path to fetch
+ * @param basePath - Optional base path prefix
+ */
+export async function fetchJson<T>(
+  registry: string,
+  path: string,
+  basePath?: string
+): Promise<T> {
+  const content = await fetchFile(registry, path, basePath);
   return JSON.parse(content) as T;
 }
 

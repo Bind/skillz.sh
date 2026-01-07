@@ -2,11 +2,9 @@ import { checkbox, confirm } from "@inquirer/prompts";
 import { findConfig, createDefaultConfig, writeConfig } from "../lib/config.ts";
 import {
   fetchAllAgents,
-  fetchAgentFile,
-  fetchAgentJson,
+  fetchAgentFiles,
   fetchAllSkills,
   fetchSkillFiles,
-  fetchSkillJson,
   fetchUtilFile,
   installAgentFile,
   installSkillFiles,
@@ -114,20 +112,17 @@ export async function agentAdd(agentNames: string[]): Promise<void> {
     try {
       console.log(`  Installing ${agent.name}...`);
 
-      // Fetch agent.json for MCP and skill dependencies
-      const agentJson = await fetchAgentJson(agent.registry, agent.name);
-
-      // Install MCP servers
-      if (agentJson?.mcp) {
-        const addedMcp = await addMcpServers(agentJson.mcp);
+      // Install MCP servers (from registry manifest)
+      if (agent.mcp) {
+        const addedMcp = await addMcpServers(agent.mcp);
         allAddedMcp.push(...addedMcp);
       }
 
-      // Install required skills
-      if (agentJson?.skills) {
+      // Install required skills (from registry manifest)
+      if (agent.skills && agent.skills.length > 0) {
         const allSkills = await fetchAllSkills(config.registries);
 
-        for (const skillName of agentJson.skills) {
+        for (const skillName of agent.skills) {
           if (await skillExists(skillName)) {
             continue; // Already installed
           }
@@ -142,15 +137,13 @@ export async function agentAdd(agentNames: string[]): Promise<void> {
 
           console.log(`    Installing required skill: ${skillName}...`);
 
-          // Install the skill (simplified version of add.ts logic)
-          const skillJson = await fetchSkillJson(skill.registry, skill.name);
-
-          if (skillJson?.utils) {
-            for (const utilName of skillJson.utils) {
+          // Install utils (from registry manifest)
+          if (skill.utils) {
+            for (const utilName of skill.utils) {
               const utilPath = `${utilName}.ts`;
               if (!(await utilExists(utilsPath, utilPath))) {
                 try {
-                  const content = await fetchUtilFile(skill.registry, utilPath);
+                  const content = await fetchUtilFile(skill.registry, utilPath, skill.basePath);
                   await installUtil(utilsPath, utilPath, content);
                 } catch {
                   // Skip util errors
@@ -159,20 +152,26 @@ export async function agentAdd(agentNames: string[]): Promise<void> {
             }
           }
 
-          if (skillJson?.dependencies) {
-            const addedDeps = await updatePackageJson(skillJson.dependencies);
+          // Add dependencies (from registry manifest)
+          if (skill.dependencies) {
+            const addedDeps = await updatePackageJson(skill.dependencies);
             allAddedDeps.push(...addedDeps);
           }
 
-          const files = await fetchSkillFiles(skill.registry, skill.name, isLegacy);
+          // Fetch and install skill files using registry manifest
+          const files = await fetchSkillFiles(skill.registry, skill, isLegacy);
           await installSkillFiles(skill.name, files);
           allAddedSkills.push(skill.name);
         }
       }
 
-      // Fetch and install agent file
-      const agentContent = await fetchAgentFile(agent.registry, agent.name);
-      await installAgentFile(agent.name, agentContent);
+      // Fetch and install agent files using registry manifest
+      const agentFiles = await fetchAgentFiles(agent.registry, agent);
+      // Install agent.md as the main file
+      const agentMd = agentFiles.find((f) => f.relativePath === "agent.md");
+      if (agentMd) {
+        await installAgentFile(agent.name, agentMd.content);
+      }
 
       console.log(`  Installed ${agent.name}`);
       installed++;

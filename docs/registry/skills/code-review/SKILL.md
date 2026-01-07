@@ -1,7 +1,7 @@
 ---
 name: code-review
 description: Automated PR code review with multi-agent analysis
-version: 1.0.0
+version: 0.1.0-beta
 license: MIT
 compatibility: opencode
 ---
@@ -144,9 +144,27 @@ The validator's job is to confirm:
 
 Filter out any issues that were not validated in Step 5. This gives our list of high signal issues for review.
 
-### Step 7: Post Results
+### Step 7: Confirm and Post Results
 
-If issues were found, post inline comments using:
+**If no issues were found:** Output "No issues found" to the terminal. Do not post any comment to the PR.
+
+**If issues were found and `--comment` flag is provided:**
+
+Present a summary to the user for confirmation:
+
+```
+## Code Review Summary
+
+Found {N} issue(s):
+
+1. **{file}:{line}** - {brief description}
+2. **{file}:{line}** - {brief description}
+...
+
+Post these as inline comments to PR #{number}? (y/n)
+```
+
+**If user confirms (y):** Post inline comments using:
 
 ```bash
 bun .opencode/skill/github-pr/post-inline-comment.js <pr-number> \
@@ -155,6 +173,10 @@ bun .opencode/skill/github-pr/post-inline-comment.js <pr-number> \
   [--start-line <start>] \
   --body "<comment>"
 ```
+
+**If user declines (n):** Do not post comments. The review output remains in the terminal.
+
+**If `--comment` flag is NOT provided:** Output the review to terminal only, do not prompt for confirmation.
 
 **Comment format:**
 
@@ -179,14 +201,6 @@ For larger fixes (6+ lines, structural changes, or changes spanning multiple loc
    ```
 
 **IMPORTANT:** Only post ONE comment per unique issue. Do not post duplicate comments.
-
-If NO issues were found and `--comment` flag is provided, post a summary:
-
-```bash
-gh pr comment <pr-number> --body "## Code review
-
-No issues found. Checked for bugs and AGENTS.md compliance."
-```
 
 ## False Positives (Do NOT Flag)
 
