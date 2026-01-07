@@ -168,7 +168,13 @@ async function build(): Promise<void> {
     })),
   };
 
-  await Bun.write(REGISTRY_FILE, JSON.stringify(registry, null, 2) + "\n");
+  const registryJson = JSON.stringify(registry, null, 2) + "\n";
+
+  // Write to root registry.json
+  await Bun.write(REGISTRY_FILE, registryJson);
+
+  // Also write to docs/registry.json for GitHub Pages
+  await Bun.write("docs/registry.json", registryJson);
 
   console.log(
     `\nGenerated ${REGISTRY_FILE} with ${skills.length} skill(s) and ${agents.length} agent(s).\n`
