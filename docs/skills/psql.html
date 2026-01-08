@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>psql - skillz.sh</title>
+  <meta name="description" content="Skills for AI coding agents">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <script>hljs.highlightAll();</script>
+  <style>
+    body { font-family: system-ui, -apple-system, sans-serif; }
+    pre { background: #18181b; border-radius: 0.5rem; padding: 1rem; overflow-x: auto; border: 1px solid #27272a; }
+    pre code { background: transparent !important; padding: 0 !important; }
+    code { font-family: ui-monospace, monospace; font-size: 0.875rem; }
+    :not(pre) > code { background: #27272a; padding: 0.125rem 0.375rem; border-radius: 0.25rem; }
+    .hljs { background: transparent !important; }
+  </style>
+</head>
+<body class="bg-zinc-950 text-zinc-100 min-h-screen">
+  <div class="border-b border-zinc-800">
+    <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+      <a href="/" class="text-xl font-bold hover:text-zinc-300">skillz.sh</a>
+      <nav class="flex items-center gap-6 text-sm">
+        <a href="/" class="text-white">Skills</a>
+        <a href="/agents.html" class="text-zinc-400 hover:text-white">Agents</a>
+        <a href="/getting-started.html" class="text-zinc-400 hover:text-white">Getting Started</a>
+        <a href="https://github.com/Bind/skillz.sh" class="text-zinc-400 hover:text-white">GitHub</a>
+      </nav>
+    </div>
+  </div>
+  <div class="border-b border-zinc-800 bg-zinc-900/50"><div class="max-w-6xl mx-auto px-6 py-2 text-sm text-zinc-500"><a href="/" class="hover:text-white">Skills</a> <span class="mx-2">/</span> <span class="text-zinc-300">psql</span></div></div>
+  <main class="max-w-6xl mx-auto px-6 py-8">
+    
+    <div class="flex flex-col lg:flex-row gap-8">
+      <div class="flex-1 min-w-0">
+        <div class="flex items-center gap-3 mb-2">
+          <span class="px-2 py-1 text-xs rounded-md bg-zinc-800 text-zinc-400">v1.0.0</span><span class="px-2 py-1 text-xs rounded-md bg-zinc-800 text-zinc-400 capitalize">database</span>
+        </div>
+        <h1 class="text-3xl font-bold mb-2">psql</h1>
+        <p class="text-lg text-zinc-400 mb-6">Run PostgreSQL queries and meta-commands via CLI</p>
+        
+        <div class="mb-8 p-4 rounded-lg border border-zinc-800 bg-zinc-900/50">
+          <div class="flex items-center justify-between gap-4">
+            <code class="text-sm text-zinc-300">bunx skz add psql</code>
+            <button onclick="navigator.clipboard.writeText('bunx skz add psql')" class="text-xs px-3 py-1 rounded-md bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white transition-colors">Copy</button>
+          </div>
+        </div>
+
+        
+        
+        
+      <div class="mt-4 text-sm">
+        <span class="text-zinc-400">Entry points:</span> <span class="text-zinc-300"><code>query</code></span>
+      </div>
+    
+        
+        
+
+        <div class="mt-8 prose prose-invert max-w-none">
+          <h2 class="text-xl font-semibold mt-8 mb-3 pb-2 border-b border-zinc-800">Overview</h2>
+<p class="my-3 text-zinc-400">CLI tool for running SQL queries and psql meta-commands against PostgreSQL databases. Each query is executed directly via the <code>psql</code> CLI - no persistent connection required.</p>
+<h2 class="text-xl font-semibold mt-8 mb-3 pb-2 border-b border-zinc-800">Prerequisites</h2>
+<ul class="my-3 list-disc list-inside space-y-1">
+<li class="ml-4"><a href="https://bun.sh" class="text-zinc-300 underline hover:text-white">bun</a> runtime installed</li>
+<li class="ml-4"><a href="https://www.postgresql.org/docs/current/app-psql.html" class="text-zinc-300 underline hover:text-white">psql</a> client installed</li>
+<li class="ml-4">PostgreSQL connection environment variables set in <code><git-root>/.env</code> or exported</li>
+</ul>
+<h2 class="text-xl font-semibold mt-8 mb-3 pb-2 border-b border-zinc-800">Environment Variables</h2>
+<p class="my-3 text-zinc-400">Set these in your <code>.env</code> file or export them:</p>
+<table class="my-4 w-full border-collapse text-sm">
+<tbody>
+<tr><th class="px-3 py-2 border border-zinc-800 bg-zinc-900 text-left font-medium">Variable</th><th class="px-3 py-2 border border-zinc-800 bg-zinc-900 text-left font-medium">Required</th><th class="px-3 py-2 border border-zinc-800 bg-zinc-900 text-left font-medium">Default</th><th class="px-3 py-2 border border-zinc-800 bg-zinc-900 text-left font-medium">Description</th></tr>
+<tr><td class="px-3 py-2 border border-zinc-800"><code>PGHOST</code></td><td class="px-3 py-2 border border-zinc-800">Yes</td><td class="px-3 py-2 border border-zinc-800">-</td><td class="px-3 py-2 border border-zinc-800">Database host</td></tr>
+<tr><td class="px-3 py-2 border border-zinc-800"><code>PGPORT</code></td><td class="px-3 py-2 border border-zinc-800">No</td><td class="px-3 py-2 border border-zinc-800"><code>5432</code></td><td class="px-3 py-2 border border-zinc-800">Database port</td></tr>
+<tr><td class="px-3 py-2 border border-zinc-800"><code>PGDATABASE</code></td><td class="px-3 py-2 border border-zinc-800">Yes</td><td class="px-3 py-2 border border-zinc-800">-</td><td class="px-3 py-2 border border-zinc-800">Database name</td></tr>
+<tr><td class="px-3 py-2 border border-zinc-800"><code>PGUSER</code></td><td class="px-3 py-2 border border-zinc-800">Yes</td><td class="px-3 py-2 border border-zinc-800">-</td><td class="px-3 py-2 border border-zinc-800">Database user</td></tr>
+<tr><td class="px-3 py-2 border border-zinc-800"><code>PGPASSWORD</code></td><td class="px-3 py-2 border border-zinc-800">Yes</td><td class="px-3 py-2 border border-zinc-800">-</td><td class="px-3 py-2 border border-zinc-800">Database password</td></tr>
+<tr><td class="px-3 py-2 border border-zinc-800"><code>PGSSLMODE</code></td><td class="px-3 py-2 border border-zinc-800">No</td><td class="px-3 py-2 border border-zinc-800">-</td><td class="px-3 py-2 border border-zinc-800">SSL mode (disable, require, etc.)</td></tr>
+</tbody>
+</table>
+<pre><code class="language-bash">PGHOST=localhost
+PGPORT=5432
+PGDATABASE=myapp
+PGUSER=myapp
+PGPASSWORD=secret
+PGSSLMODE=disable</code></pre>
+<p class="my-3 text-zinc-400">Example <code>.env</code>:</p>
+<h2 class="text-xl font-semibold mt-8 mb-3 pb-2 border-b border-zinc-800">Command</h2>
+<h3 class="text-lg font-semibold mt-6 mb-2">Query</h3>
+<p class="my-3 text-zinc-400">Run a SQL query, meta-command, or SQL file.</p>
+<pre><code class="language-bash">bun .opencode/skill/psql/query.js &lt;query&gt; [options]
+bun .opencode/skill/psql/query.js --file &lt;path&gt; [options]</code></pre>
+<p class="my-3 text-zinc-400"><strong class="text-zinc-200">Arguments:</strong></p>
+<ul class="my-3 list-disc list-inside space-y-1">
+<li class="ml-4"><code>query</code> - SQL query or meta-command to execute</li>
+</ul>
+<p class="my-3 text-zinc-400"><strong class="text-zinc-200">Options:</strong></p>
+<ul class="my-3 list-disc list-inside space-y-1">
+<li class="ml-4"><code>--file <path></code> - Execute SQL file instead of inline query</li>
+<li class="ml-4"><code>--tuples</code> - Tuples only output (no headers or row count)</li>
+<li class="ml-4"><code>--timeout <ms></code> - Query timeout in milliseconds (default: 30000)</li>
+<li class="ml-4"><code>--json</code> - Wrap output in JSON</li>
+<li class="ml-4"><code>--help</code> - Show help</li>
+</ul>
+<p class="my-3 text-zinc-400"><strong class="text-zinc-200">Examples:</strong></p>
+<pre><code class="language-bash"># SQL queries
+bun .opencode/skill/psql/query.js &quot;SELECT * FROM users LIMIT 5;&quot;
+bun .opencode/skill/psql/query.js &quot;SELECT COUNT(*) FROM orders WHERE status = 'pending';&quot;
+
+# Meta-commands
+bun .opencode/skill/psql/query.js &quot;\dt&quot;
+bun .opencode/skill/psql/query.js &quot;\d users&quot;
+bun .opencode/skill/psql/query.js &quot;\di&quot;
+bun .opencode/skill/psql/query.js &quot;\l&quot;
+
+# Execute SQL file
+bun .opencode/skill/psql/query.js --file migrations/001_create_users.sql
+bun .opencode/skill/psql/query.js --file scripts/seed_data.sql
+
+# Tuples only (for scripting/parsing)
+bun .opencode/skill/psql/query.js &quot;SELECT id FROM users;&quot; --tuples
+
+# With longer timeout for slow queries
+bun .opencode/skill/psql/query.js &quot;SELECT * FROM large_table;&quot; --timeout 60000</code></pre>
+<hr class="my-6 border-zinc-800">
+<h2 class="text-xl font-semibold mt-8 mb-3 pb-2 border-b border-zinc-800">Common Workflows</h2>
+<h3 class="text-lg font-semibold mt-6 mb-2">Explore Database Schema</h3>
+<pre><code class="language-bash"># List all tables
+bun .opencode/skill/psql/query.js &quot;\dt&quot;
+
+# Describe a specific table
+bun .opencode/skill/psql/query.js &quot;\d users&quot;
+
+# Show indexes
+bun .opencode/skill/psql/query.js &quot;\di&quot;
+
+# Show foreign keys for a table
+bun .opencode/skill/psql/query.js &quot;\d+ orders&quot;</code></pre>
+<h3 class="text-lg font-semibold mt-6 mb-2">Run Analytical Queries</h3>
+<pre><code class="language-bash"># Count records
+bun .opencode/skill/psql/query.js &quot;SELECT COUNT(*) FROM orders;&quot;
+
+# Group by aggregation
+bun .opencode/skill/psql/query.js &quot;SELECT status, COUNT(*) FROM orders GROUP BY status;&quot;
+
+# Recent activity
+bun .opencode/skill/psql/query.js &quot;SELECT * FROM orders WHERE created_at &gt; NOW() - INTERVAL '1 day' ORDER BY created_at DESC LIMIT 10;&quot;</code></pre>
+<h3 class="text-lg font-semibold mt-6 mb-2">Database Administration</h3>
+<pre><code class="language-bash"># Check table sizes
+bun .opencode/skill/psql/query.js &quot;SELECT relname, pg_size_pretty(pg_total_relation_size(relid)) FROM pg_catalog.pg_statio_user_tables ORDER BY pg_total_relation_size(relid) DESC LIMIT 10;&quot;
+
+# Check active connections
+bun .opencode/skill/psql/query.js &quot;SELECT count(*) FROM pg_stat_activity WHERE state = 'active';&quot;
+
+# List databases
+bun .opencode/skill/psql/query.js &quot;\l&quot;</code></pre>
+<h3 class="text-lg font-semibold mt-6 mb-2">Run Migrations</h3>
+<pre><code class="language-bash"># Execute a migration file
+bun .opencode/skill/psql/query.js --file migrations/001_create_users.sql
+
+# Execute seed data
+bun .opencode/skill/psql/query.js --file scripts/seed.sql</code></pre>
+<hr class="my-6 border-zinc-800">
+<h2 class="text-xl font-semibold mt-8 mb-3 pb-2 border-b border-zinc-800">Output Behavior</h2>
+<ul class="my-3 list-disc list-inside space-y-1">
+<li class="ml-4">Query output is displayed directly to the user in the terminal</li>
+<li class="ml-4"><strong class="text-zinc-200">Do not re-summarize or reformat query output</strong> - the user can already see it</li>
+<li class="ml-4">Use <code>--tuples</code> for clean output without headers (useful for piping to other tools)</li>
+<li class="ml-4">Use <code>--json</code> for structured output when parsing programmatically</li>
+</ul>
+<h2 class="text-xl font-semibold mt-8 mb-3 pb-2 border-b border-zinc-800">Notes</h2>
+<ul class="my-3 list-disc list-inside space-y-1">
+<li class="ml-4">Each query is executed as a separate <code>psql</code> invocation (no persistent connection)</li>
+<li class="ml-4">Meta-commands (starting with <code>\</code>) work the same as SQL queries</li>
+<li class="ml-4">Long-running queries may need <code>--timeout</code> increased from the default 30 seconds</li>
+<li class="ml-4">The <code>--tuples</code> flag is useful when you need to parse output or pipe to other commands</li>
+</ul>
+        </div>
+      </div>
+    </div>
+  
+  </main>
+  <footer class="border-t border-zinc-800 mt-16">
+    <div class="max-w-6xl mx-auto px-6 py-8 text-sm text-zinc-500">
+      <p>Built for <a href="https://opencode.ai" class="underline hover:text-white">OpenCode</a> and <a href="https://claude.ai" class="underline hover:text-white">Claude Code</a></p>
+    </div>
+  </footer>
+</body>
+</html>

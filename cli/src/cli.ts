@@ -3,6 +3,7 @@
 import { init } from "./commands/init.ts";
 import { list } from "./commands/list.ts";
 import { add } from "./commands/add.ts";
+import { agentAdd } from "./commands/agent-add.ts";
 import { migrate } from "./commands/migrate.ts";
 
 const VERSION = "0.0.6";
@@ -16,6 +17,7 @@ Commands:
   init [--claude]         Initialize skillz in current directory
   list                    List available skills from registries
   add [skills...]         Add skills to your project
+  agent [agents...]       Add agents to your project
   migrate                 Migrate legacy config to .opencode/
 
 Options:
@@ -31,6 +33,8 @@ Examples:
   skz list                List all available skills
   skz add code-review     Add a specific skill
   skz add                 Interactive skill picker
+  skz agent               Interactive agent picker
+  skz agent pr-pilot      Add a specific agent
 `;
 
 async function main(): Promise<void> {
@@ -62,6 +66,12 @@ async function main(): Promise<void> {
     case "add": {
       const skillNames = args.slice(1);
       await add(skillNames);
+      break;
+    }
+
+    case "agent": {
+      const agentNames = args.slice(1);
+      await agentAdd(agentNames);
       break;
     }
 

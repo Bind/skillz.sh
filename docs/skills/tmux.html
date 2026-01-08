@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>tmux - skillz.sh</title>
+  <meta name="description" content="Skills for AI coding agents">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <script>hljs.highlightAll();</script>
+  <style>
+    body { font-family: system-ui, -apple-system, sans-serif; }
+    pre { background: #18181b; border-radius: 0.5rem; padding: 1rem; overflow-x: auto; border: 1px solid #27272a; }
+    pre code { background: transparent !important; padding: 0 !important; }
+    code { font-family: ui-monospace, monospace; font-size: 0.875rem; }
+    :not(pre) > code { background: #27272a; padding: 0.125rem 0.375rem; border-radius: 0.25rem; }
+    .hljs { background: transparent !important; }
+  </style>
+</head>
+<body class="bg-zinc-950 text-zinc-100 min-h-screen">
+  <div class="border-b border-zinc-800">
+    <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+      <a href="/" class="text-xl font-bold hover:text-zinc-300">skillz.sh</a>
+      <nav class="flex items-center gap-6 text-sm">
+        <a href="/" class="text-white">Skills</a>
+        <a href="/agents.html" class="text-zinc-400 hover:text-white">Agents</a>
+        <a href="/getting-started.html" class="text-zinc-400 hover:text-white">Getting Started</a>
+        <a href="https://github.com/Bind/skillz.sh" class="text-zinc-400 hover:text-white">GitHub</a>
+      </nav>
+    </div>
+  </div>
+  <div class="border-b border-zinc-800 bg-zinc-900/50"><div class="max-w-6xl mx-auto px-6 py-2 text-sm text-zinc-500"><a href="/" class="hover:text-white">Skills</a> <span class="mx-2">/</span> <span class="text-zinc-300">tmux</span></div></div>
+  <main class="max-w-6xl mx-auto px-6 py-8">
+    
+    <div class="flex flex-col lg:flex-row gap-8">
+      <div class="flex-1 min-w-0">
+        <div class="flex items-center gap-3 mb-2">
+          <span class="px-2 py-1 text-xs rounded-md bg-zinc-800 text-zinc-400">v1.0.0</span><span class="px-2 py-1 text-xs rounded-md bg-zinc-800 text-zinc-400 capitalize">terminal</span>
+        </div>
+        <h1 class="text-3xl font-bold mb-2">tmux</h1>
+        <p class="text-lg text-zinc-400 mb-6">Manage tmux sessions for interactive background processes</p>
+        
+        <div class="mb-8 p-4 rounded-lg border border-zinc-800 bg-zinc-900/50">
+          <div class="flex items-center justify-between gap-4">
+            <code class="text-sm text-zinc-300">bunx skz add tmux</code>
+            <button onclick="navigator.clipboard.writeText('bunx skz add tmux')" class="text-xs px-3 py-1 rounded-md bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white transition-colors">Copy</button>
+          </div>
+        </div>
+
+        
+        
+        
+      <div class="mt-4 text-sm">
+        <span class="text-zinc-400">Entry points:</span> <span class="text-zinc-300"><code>list-sessions</code>, <code>create-session</code>, <code>send-command</code>, <code>capture-output</code>, <code>kill-session</code></span>
+      </div>
+    
+        
+        
+
+        <div class="mt-8 prose prose-invert max-w-none">
+          <h2 class="text-xl font-semibold mt-8 mb-3 pb-2 border-b border-zinc-800">Overview</h2>
+<p class="my-3 text-zinc-400">CLI tools for managing tmux sessions, enabling agents to run and interact with background processes like database connections (psql, mysql), REPLs, log tailing, and other interactive commands.</p>
+<h2 class="text-xl font-semibold mt-8 mb-3 pb-2 border-b border-zinc-800">Prerequisites</h2>
+<ul class="my-3 list-disc list-inside space-y-1">
+<li class="ml-4"><a href="https://bun.sh" class="text-zinc-300 underline hover:text-white">bun</a> runtime installed</li>
+<li class="ml-4"><a href="https://github.com/tmux/tmux" class="text-zinc-300 underline hover:text-white">tmux</a> installed (<code>brew install tmux</code> or <code>apt install tmux</code>)</li>
+</ul>
+<h2 class="text-xl font-semibold mt-8 mb-3 pb-2 border-b border-zinc-800">Commands</h2>
+<h3 class="text-lg font-semibold mt-6 mb-2">List Sessions</h3>
+<p class="my-3 text-zinc-400">List all active tmux sessions.</p>
+<pre><code class="language-bash">bun .opencode/skill/tmux/list-sessions.js [options]</code></pre>
+<p class="my-3 text-zinc-400"><strong class="text-zinc-200">Options:</strong></p>
+<ul class="my-3 list-disc list-inside space-y-1">
+<li class="ml-4"><code>--json</code> - Output as JSON</li>
+</ul>
+<pre><code class="language-bash">bun .opencode/skill/tmux/list-sessions.js
+bun .opencode/skill/tmux/list-sessions.js --json</code></pre>
+<p class="my-3 text-zinc-400"><strong class="text-zinc-200">Examples:</strong></p>
+<hr class="my-6 border-zinc-800">
+<h3 class="text-lg font-semibold mt-6 mb-2">Create Session</h3>
+<p class="my-3 text-zinc-400">Create a new tmux session for running background processes.</p>
+<pre><code class="language-bash">bun .opencode/skill/tmux/create-session.js &lt;name&gt; [options]</code></pre>
+<p class="my-3 text-zinc-400"><strong class="text-zinc-200">Arguments:</strong></p>
+<ul class="my-3 list-disc list-inside space-y-1">
+<li class="ml-4"><code>name</code> - Session name (required)</li>
+</ul>
+<p class="my-3 text-zinc-400"><strong class="text-zinc-200">Options:</strong></p>
+<ul class="my-3 list-disc list-inside space-y-1">
+<li class="ml-4"><code>--command <cmd></code> - Initial command to run in the session</li>
+<li class="ml-4"><code>--workdir <path></code> - Working directory for the session</li>
+<li class="ml-4"><code>--window <name></code> - Name for the initial window</li>
+<li class="ml-4"><code>--json</code> - Output as JSON</li>
+</ul>
+<pre><code class="language-bash"># Create a session for psql
+bun .opencode/skill/tmux/create-session.js db-session --command &quot;psql -h localhost -U postgres mydb&quot;
+
+# Create a session for tailing logs
+bun .opencode/skill/tmux/create-session.js logs --command &quot;tail -f /var/log/app.log&quot;
+
+# Create a session in a specific directory
+bun .opencode/skill/tmux/create-session.js dev --workdir ~/projects/myapp</code></pre>
+<p class="my-3 text-zinc-400"><strong class="text-zinc-200">Examples:</strong></p>
+<hr class="my-6 border-zinc-800">
+<h3 class="text-lg font-semibold mt-6 mb-2">Send Command</h3>
+<p class="my-3 text-zinc-400">Send a command to a tmux session (types the command and presses Enter).</p>
+<pre><code class="language-bash">bun .opencode/skill/tmux/send-command.js &lt;session&gt; &lt;command&gt; [options]</code></pre>
+<p class="my-3 text-zinc-400"><strong class="text-zinc-200">Arguments:</strong></p>
+<ul class="my-3 list-disc list-inside space-y-1">
+<li class="ml-4"><code>session</code> - Session name (or session:window or session:window.pane)</li>
+<li class="ml-4"><code>command</code> - Command to send</li>
+</ul>
+<p class="my-3 text-zinc-400"><strong class="text-zinc-200">Options:</strong></p>
+<ul class="my-3 list-disc list-inside space-y-1">
+<li class="ml-4"><code>--no-enter</code> - Send keys without pressing Enter</li>
+<li class="ml-4"><code>--literal</code> - Send keys literally (no special key interpretation)</li>
+<li class="ml-4"><code>--json</code> - Output as JSON</li>
+</ul>
+<pre><code class="language-bash"># Run a SQL query in a psql session
+bun .opencode/skill/tmux/send-command.js db-session &quot;SELECT * FROM users LIMIT 10;&quot;
+
+# Send Ctrl+C to interrupt a process
+bun .opencode/skill/tmux/send-command.js logs &quot;C-c&quot; --no-enter
+
+# Type text without executing
+bun .opencode/skill/tmux/send-command.js dev &quot;echo hello&quot; --no-enter</code></pre>
+<p class="my-3 text-zinc-400"><strong class="text-zinc-200">Examples:</strong></p>
+<hr class="my-6 border-zinc-800">
+<h3 class="text-lg font-semibold mt-6 mb-2">Capture Output</h3>
+<p class="my-3 text-zinc-400">Capture and read the current output from a tmux session pane.</p>
+<pre><code class="language-bash">bun .opencode/skill/tmux/capture-output.js &lt;session&gt; [options]</code></pre>
+<p class="my-3 text-zinc-400"><strong class="text-zinc-200">Arguments:</strong></p>
+<ul class="my-3 list-disc list-inside space-y-1">
+<li class="ml-4"><code>session</code> - Session name (or session:window or session:window.pane)</li>
+</ul>
+<p class="my-3 text-zinc-400"><strong class="text-zinc-200">Options:</strong></p>
+<ul class="my-3 list-disc list-inside space-y-1">
+<li class="ml-4"><code>--lines <n></code> - Number of lines of scrollback to capture (default: 100)</li>
+<li class="ml-4"><code>--wait <pattern></code> - Wait for output matching this pattern before capturing</li>
+<li class="ml-4"><code>--timeout <ms></code> - Timeout for --wait in milliseconds (default: 30000)</li>
+<li class="ml-4"><code>--json</code> - Output as JSON</li>
+</ul>
+<pre><code class="language-bash"># Capture recent output from a session
+bun .opencode/skill/tmux/capture-output.js db-session
+
+# Capture more scrollback history
+bun .opencode/skill/tmux/capture-output.js logs --lines 500
+
+# Wait for a specific prompt before capturing
+bun .opencode/skill/tmux/capture-output.js db-session --wait &quot;postgres=#&quot; --timeout 5000</code></pre>
+<p class="my-3 text-zinc-400"><strong class="text-zinc-200">Examples:</strong></p>
+<hr class="my-6 border-zinc-800">
+<h3 class="text-lg font-semibold mt-6 mb-2">Kill Session</h3>
+<p class="my-3 text-zinc-400">Terminate a tmux session.</p>
+<pre><code class="language-bash">bun .opencode/skill/tmux/kill-session.js &lt;name&gt; [options]</code></pre>
+<p class="my-3 text-zinc-400"><strong class="text-zinc-200">Arguments:</strong></p>
+<ul class="my-3 list-disc list-inside space-y-1">
+<li class="ml-4"><code>name</code> - Session name to kill</li>
+</ul>
+<p class="my-3 text-zinc-400"><strong class="text-zinc-200">Options:</strong></p>
+<ul class="my-3 list-disc list-inside space-y-1">
+<li class="ml-4"><code>--json</code> - Output as JSON</li>
+</ul>
+<pre><code class="language-bash">bun .opencode/skill/tmux/kill-session.js db-session</code></pre>
+<p class="my-3 text-zinc-400"><strong class="text-zinc-200">Examples:</strong></p>
+<hr class="my-6 border-zinc-800">
+<h2 class="text-xl font-semibold mt-8 mb-3 pb-2 border-b border-zinc-800">Common Workflows</h2>
+<h3 class="text-lg font-semibold mt-6 mb-2">Database Session (psql)</h3>
+<pre><code class="language-bash"># Create a psql session
+bun .opencode/skill/tmux/create-session.js psql --command &quot;psql -h localhost -U postgres mydb&quot;
+
+# Wait for connection, then run queries
+bun .opencode/skill/tmux/capture-output.js psql --wait &quot;postgres=#&quot;
+bun .opencode/skill/tmux/send-command.js psql &quot;SELECT COUNT(*) FROM users;&quot;
+
+# Capture the query results
+bun .opencode/skill/tmux/capture-output.js psql --lines 50
+
+# Clean up when done
+bun .opencode/skill/tmux/kill-session.js psql</code></pre>
+<h3 class="text-lg font-semibold mt-6 mb-2">Log Monitoring</h3>
+<pre><code class="language-bash"># Start tailing logs
+bun .opencode/skill/tmux/create-session.js logs --command &quot;tail -f /var/log/app.log&quot;
+
+# Check for errors periodically
+bun .opencode/skill/tmux/capture-output.js logs --lines 200
+
+# Stop monitoring
+bun .opencode/skill/tmux/kill-session.js logs</code></pre>
+<h3 class="text-lg font-semibold mt-6 mb-2">Interactive REPL (Python, Node, etc.)</h3>
+<pre><code class="language-bash"># Start a Python REPL
+bun .opencode/skill/tmux/create-session.js python --command &quot;python3&quot;
+
+# Run Python commands
+bun .opencode/skill/tmux/send-command.js python &quot;import pandas as pd&quot;
+bun .opencode/skill/tmux/send-command.js python &quot;df = pd.read_csv('data.csv')&quot;
+bun .opencode/skill/tmux/send-command.js python &quot;df.describe()&quot;
+
+# Capture output
+bun .opencode/skill/tmux/capture-output.js python</code></pre>
+<hr class="my-6 border-zinc-800">
+<h2 class="text-xl font-semibold mt-8 mb-3 pb-2 border-b border-zinc-800">Output Behavior</h2>
+<ul class="my-3 list-disc list-inside space-y-1">
+<li class="ml-4">Command output is displayed directly to the user in the terminal</li>
+<li class="ml-4"><strong class="text-zinc-200">Do not re-summarize or reformat output</strong> - the user can already see it</li>
+<li class="ml-4">When capturing output, the raw terminal content is returned (may include ANSI codes)</li>
+<li class="ml-4">Use <code>--json</code> for structured output when parsing programmatically</li>
+</ul>
+<h2 class="text-xl font-semibold mt-8 mb-3 pb-2 border-b border-zinc-800">Notes</h2>
+<ul class="my-3 list-disc list-inside space-y-1">
+<li class="ml-4">Session names should be descriptive and unique (e.g., <code>psql-mydb</code>, <code>logs-app</code>)</li>
+<li class="ml-4">Target format: <code>session</code> or <code>session:window</code> or <code>session:window.pane</code></li>
+<li class="ml-4">Special keys: <code>C-c</code> (Ctrl+C), <code>C-d</code> (Ctrl+D), <code>C-m</code> (Enter), <code>C-l</code> (clear)</li>
+<li class="ml-4">Sessions persist until explicitly killed or system restart</li>
+</ul>
+        </div>
+      </div>
+    </div>
+  
+  </main>
+  <footer class="border-t border-zinc-800 mt-16">
+    <div class="max-w-6xl mx-auto px-6 py-8 text-sm text-zinc-500">
+      <p>Built for <a href="https://opencode.ai" class="underline hover:text-white">OpenCode</a> and <a href="https://claude.ai" class="underline hover:text-white">Claude Code</a></p>
+    </div>
+  </footer>
+</body>
+</html>

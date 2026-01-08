@@ -1,11 +1,300 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 <head>
   <meta charset="UTF-8">
-  <meta http-equiv="refresh" content="0; url=https://github.com/Bind/skillz.sh">
-  <title>skillz.sh - Redirecting...</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Skills - skillz.sh</title>
+  <meta name="description" content="Skills for AI coding agents">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <script>hljs.highlightAll();</script>
+  <style>
+    body { font-family: system-ui, -apple-system, sans-serif; }
+    pre { background: #18181b; border-radius: 0.5rem; padding: 1rem; overflow-x: auto; border: 1px solid #27272a; }
+    pre code { background: transparent !important; padding: 0 !important; }
+    code { font-family: ui-monospace, monospace; font-size: 0.875rem; }
+    :not(pre) > code { background: #27272a; padding: 0.125rem 0.375rem; border-radius: 0.25rem; }
+    .hljs { background: transparent !important; }
+  </style>
 </head>
-<body>
-  <p>Redirecting to <a href="https://github.com/Bind/skillz.sh">GitHub</a>...</p>
+<body class="bg-zinc-950 text-zinc-100 min-h-screen">
+  <div class="border-b border-zinc-800">
+    <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+      <a href="/" class="text-xl font-bold hover:text-zinc-300">skillz.sh</a>
+      <nav class="flex items-center gap-6 text-sm">
+        <a href="/" class="text-white">Skills</a>
+        <a href="/agents.html" class="text-zinc-400 hover:text-white">Agents</a>
+        <a href="/getting-started.html" class="text-zinc-400 hover:text-white">Getting Started</a>
+        <a href="https://github.com/Bind/skillz.sh" class="text-zinc-400 hover:text-white">GitHub</a>
+      </nav>
+    </div>
+  </div>
+  
+  <main class="max-w-6xl mx-auto px-6 py-8">
+    
+    <div class="mb-12">
+      <h1 class="text-4xl font-bold mb-4">Skills</h1>
+      <p class="text-lg text-zinc-400 max-w-2xl">
+        Installable capabilities for AI coding agents. Each skill adds new tools and workflows to your agent.
+      </p>
+      <div class="mt-6 flex items-center gap-4">
+        <code class="text-sm bg-zinc-900 px-4 py-2 rounded-lg border border-zinc-800">bunx skz add &lt;skill-name&gt;</code>
+      </div>
+    </div>
+    
+      <div class="mb-12">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="w-8 h-8 rounded-md bg-orange-500/20 text-orange-400 flex items-center justify-center text-sm font-bold">B</div>
+          <h2 class="text-lg font-semibold capitalize">browser</h2>
+          <span class="text-sm text-zinc-500">1 skill</span>
+        </div>
+        <div class="grid gap-3">
+          
+            <a href="/skills/playwright-browser.html" class="block p-4 rounded-lg border border-zinc-800 hover:border-zinc-700 hover:bg-zinc-900/50 transition-colors">
+              <div class="flex items-start justify-between gap-4">
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center gap-2">
+                    <h3 class="font-medium text-zinc-100">playwright-browser</h3>
+                    <span class="text-xs px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-400">v1.0.0</span>
+                  </div>
+                  <p class="text-sm text-zinc-500 mt-1 line-clamp-2">Control a Playwright browser via CLI - navigate, interact, and screenshot</p>
+                </div>
+                <svg class="w-5 h-5 text-zinc-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                </svg>
+              </div>
+            </a>
+          
+        </div>
+      </div>
+    
+      <div class="mb-12">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="w-8 h-8 rounded-md bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-sm font-bold">D</div>
+          <h2 class="text-lg font-semibold capitalize">database</h2>
+          <span class="text-sm text-zinc-500">1 skill</span>
+        </div>
+        <div class="grid gap-3">
+          
+            <a href="/skills/psql.html" class="block p-4 rounded-lg border border-zinc-800 hover:border-zinc-700 hover:bg-zinc-900/50 transition-colors">
+              <div class="flex items-start justify-between gap-4">
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center gap-2">
+                    <h3 class="font-medium text-zinc-100">psql</h3>
+                    <span class="text-xs px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-400">v1.0.0</span>
+                  </div>
+                  <p class="text-sm text-zinc-500 mt-1 line-clamp-2">Run PostgreSQL queries and meta-commands via CLI</p>
+                </div>
+                <svg class="w-5 h-5 text-zinc-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                </svg>
+              </div>
+            </a>
+          
+        </div>
+      </div>
+    
+      <div class="mb-12">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="w-8 h-8 rounded-md bg-blue-500/20 text-blue-400 flex items-center justify-center text-sm font-bold">D</div>
+          <h2 class="text-lg font-semibold capitalize">docs</h2>
+          <span class="text-sm text-zinc-500">1 skill</span>
+        </div>
+        <div class="grid gap-3">
+          
+            <a href="/skills/compound-docs.html" class="block p-4 rounded-lg border border-zinc-800 hover:border-zinc-700 hover:bg-zinc-900/50 transition-colors">
+              <div class="flex items-start justify-between gap-4">
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center gap-2">
+                    <h3 class="font-medium text-zinc-100">compound-docs</h3>
+                    <span class="text-xs px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-400">v0.1.0-beta</span>
+                  </div>
+                  <p class="text-sm text-zinc-500 mt-1 line-clamp-2">Capture solved problems as searchable documentation with pattern detection. This skill auto-triggers when users confirm a fix worked ("that worked", "it's fixed", "working now") or manually via /compound command.</p>
+                </div>
+                <svg class="w-5 h-5 text-zinc-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                </svg>
+              </div>
+            </a>
+          
+        </div>
+      </div>
+    
+      <div class="mb-12">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="w-8 h-8 rounded-md bg-zinc-500/20 text-zinc-400 flex items-center justify-center text-sm font-bold">G</div>
+          <h2 class="text-lg font-semibold capitalize">github</h2>
+          <span class="text-sm text-zinc-500">2 skills</span>
+        </div>
+        <div class="grid gap-3">
+          
+            <a href="/skills/github-pr.html" class="block p-4 rounded-lg border border-zinc-800 hover:border-zinc-700 hover:bg-zinc-900/50 transition-colors">
+              <div class="flex items-start justify-between gap-4">
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center gap-2">
+                    <h3 class="font-medium text-zinc-100">github-pr</h3>
+                    <span class="text-xs px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-400">v0.1.0-beta</span>
+                  </div>
+                  <p class="text-sm text-zinc-500 mt-1 line-clamp-2">GitHub PR utilities for code review workflows</p>
+                </div>
+                <svg class="w-5 h-5 text-zinc-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                </svg>
+              </div>
+            </a>
+          
+            <a href="/skills/code-review.html" class="block p-4 rounded-lg border border-zinc-800 hover:border-zinc-700 hover:bg-zinc-900/50 transition-colors">
+              <div class="flex items-start justify-between gap-4">
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center gap-2">
+                    <h3 class="font-medium text-zinc-100">code-review</h3>
+                    <span class="text-xs px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-400">v0.1.0-beta</span>
+                  </div>
+                  <p class="text-sm text-zinc-500 mt-1 line-clamp-2">Automated PR code review with multi-agent analysis</p>
+                </div>
+                <svg class="w-5 h-5 text-zinc-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                </svg>
+              </div>
+            </a>
+          
+        </div>
+      </div>
+    
+      <div class="mb-12">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="w-8 h-8 rounded-md bg-indigo-500/20 text-indigo-400 flex items-center justify-center text-sm font-bold">L</div>
+          <h2 class="text-lg font-semibold capitalize">linear</h2>
+          <span class="text-sm text-zinc-500">6 skills</span>
+        </div>
+        <div class="grid gap-3">
+          
+            <a href="/skills/linear-milestones-read.html" class="block p-4 rounded-lg border border-zinc-800 hover:border-zinc-700 hover:bg-zinc-900/50 transition-colors">
+              <div class="flex items-start justify-between gap-4">
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center gap-2">
+                    <h3 class="font-medium text-zinc-100">linear-milestones-read</h3>
+                    <span class="text-xs px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-400">v1.0.0</span>
+                  </div>
+                  <p class="text-sm text-zinc-500 mt-1 line-clamp-2">List Linear project milestones via CLI (read-only operations)</p>
+                </div>
+                <svg class="w-5 h-5 text-zinc-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                </svg>
+              </div>
+            </a>
+          
+            <a href="/skills/linear-issues-read.html" class="block p-4 rounded-lg border border-zinc-800 hover:border-zinc-700 hover:bg-zinc-900/50 transition-colors">
+              <div class="flex items-start justify-between gap-4">
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center gap-2">
+                    <h3 class="font-medium text-zinc-100">linear-issues-read</h3>
+                    <span class="text-xs px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-400">v1.0.0</span>
+                  </div>
+                  <p class="text-sm text-zinc-500 mt-1 line-clamp-2">List and get Linear issues via CLI (read-only operations)</p>
+                </div>
+                <svg class="w-5 h-5 text-zinc-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                </svg>
+              </div>
+            </a>
+          
+            <a href="/skills/linear-issues-write.html" class="block p-4 rounded-lg border border-zinc-800 hover:border-zinc-700 hover:bg-zinc-900/50 transition-colors">
+              <div class="flex items-start justify-between gap-4">
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center gap-2">
+                    <h3 class="font-medium text-zinc-100">linear-issues-write</h3>
+                    <span class="text-xs px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-400">v1.0.0</span>
+                  </div>
+                  <p class="text-sm text-zinc-500 mt-1 line-clamp-2">Create and update Linear issues via CLI (write operations)</p>
+                </div>
+                <svg class="w-5 h-5 text-zinc-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                </svg>
+              </div>
+            </a>
+          
+            <a href="/skills/linear-projects-read.html" class="block p-4 rounded-lg border border-zinc-800 hover:border-zinc-700 hover:bg-zinc-900/50 transition-colors">
+              <div class="flex items-start justify-between gap-4">
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center gap-2">
+                    <h3 class="font-medium text-zinc-100">linear-projects-read</h3>
+                    <span class="text-xs px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-400">v1.0.0</span>
+                  </div>
+                  <p class="text-sm text-zinc-500 mt-1 line-clamp-2">List and get Linear projects via CLI (read-only operations)</p>
+                </div>
+                <svg class="w-5 h-5 text-zinc-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                </svg>
+              </div>
+            </a>
+          
+            <a href="/skills/linear-projects-write.html" class="block p-4 rounded-lg border border-zinc-800 hover:border-zinc-700 hover:bg-zinc-900/50 transition-colors">
+              <div class="flex items-start justify-between gap-4">
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center gap-2">
+                    <h3 class="font-medium text-zinc-100">linear-projects-write</h3>
+                    <span class="text-xs px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-400">v1.0.0</span>
+                  </div>
+                  <p class="text-sm text-zinc-500 mt-1 line-clamp-2">Create and update Linear projects via CLI (write operations)</p>
+                </div>
+                <svg class="w-5 h-5 text-zinc-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                </svg>
+              </div>
+            </a>
+          
+            <a href="/skills/linear-milestones-write.html" class="block p-4 rounded-lg border border-zinc-800 hover:border-zinc-700 hover:bg-zinc-900/50 transition-colors">
+              <div class="flex items-start justify-between gap-4">
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center gap-2">
+                    <h3 class="font-medium text-zinc-100">linear-milestones-write</h3>
+                    <span class="text-xs px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-400">v1.0.0</span>
+                  </div>
+                  <p class="text-sm text-zinc-500 mt-1 line-clamp-2">Create and update Linear project milestones via CLI (write operations)</p>
+                </div>
+                <svg class="w-5 h-5 text-zinc-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                </svg>
+              </div>
+            </a>
+          
+        </div>
+      </div>
+    
+      <div class="mb-12">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="w-8 h-8 rounded-md bg-yellow-500/20 text-yellow-400 flex items-center justify-center text-sm font-bold">T</div>
+          <h2 class="text-lg font-semibold capitalize">terminal</h2>
+          <span class="text-sm text-zinc-500">1 skill</span>
+        </div>
+        <div class="grid gap-3">
+          
+            <a href="/skills/tmux.html" class="block p-4 rounded-lg border border-zinc-800 hover:border-zinc-700 hover:bg-zinc-900/50 transition-colors">
+              <div class="flex items-start justify-between gap-4">
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center gap-2">
+                    <h3 class="font-medium text-zinc-100">tmux</h3>
+                    <span class="text-xs px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-400">v1.0.0</span>
+                  </div>
+                  <p class="text-sm text-zinc-500 mt-1 line-clamp-2">Manage tmux sessions for interactive background processes</p>
+                </div>
+                <svg class="w-5 h-5 text-zinc-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                </svg>
+              </div>
+            </a>
+          
+        </div>
+      </div>
+    
+  
+  </main>
+  <footer class="border-t border-zinc-800 mt-16">
+    <div class="max-w-6xl mx-auto px-6 py-8 text-sm text-zinc-500">
+      <p>Built for <a href="https://opencode.ai" class="underline hover:text-white">OpenCode</a> and <a href="https://claude.ai" class="underline hover:text-white">Claude Code</a></p>
+    </div>
+  </footer>
 </body>
 </html>

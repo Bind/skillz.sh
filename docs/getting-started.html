@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Getting Started - skillz.sh</title>
+  <meta name="description" content="Skills for AI coding agents">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <script>hljs.highlightAll();</script>
+  <style>
+    body { font-family: system-ui, -apple-system, sans-serif; }
+    pre { background: #18181b; border-radius: 0.5rem; padding: 1rem; overflow-x: auto; border: 1px solid #27272a; }
+    pre code { background: transparent !important; padding: 0 !important; }
+    code { font-family: ui-monospace, monospace; font-size: 0.875rem; }
+    :not(pre) > code { background: #27272a; padding: 0.125rem 0.375rem; border-radius: 0.25rem; }
+    .hljs { background: transparent !important; }
+  </style>
+</head>
+<body class="bg-zinc-950 text-zinc-100 min-h-screen">
+  <div class="border-b border-zinc-800">
+    <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+      <a href="/" class="text-xl font-bold hover:text-zinc-300">skillz.sh</a>
+      <nav class="flex items-center gap-6 text-sm">
+        <a href="/" class="text-zinc-400 hover:text-white">Skills</a>
+        <a href="/agents.html" class="text-zinc-400 hover:text-white">Agents</a>
+        <a href="/getting-started.html" class="text-white">Getting Started</a>
+        <a href="https://github.com/Bind/skillz.sh" class="text-zinc-400 hover:text-white">GitHub</a>
+      </nav>
+    </div>
+  </div>
+  
+  <main class="max-w-6xl mx-auto px-6 py-8">
+    
+    <div class="max-w-3xl">
+      <h1 class="text-4xl font-bold mb-4">Getting Started</h1>
+      <p class="text-lg text-zinc-400 mb-8">
+        Install skills and agents for your AI coding assistant in minutes.
+      </p>
+
+      <h2 class="text-xl font-semibold mt-8 mb-4 pb-2 border-b border-zinc-800">Installation</h2>
+      <p class="text-zinc-400 mb-4">Initialize skillz in your project:</p>
+      <pre><code class="language-bash">bunx skz init</code></pre>
+      <p class="text-zinc-400 mt-4 mb-4">This creates a <code>.opencode/skz.json</code> config file and sets up the required directories.</p>
+
+      <h2 class="text-xl font-semibold mt-8 mb-4 pb-2 border-b border-zinc-800">Adding Skills</h2>
+      <p class="text-zinc-400 mb-4">Browse available skills and add them to your project:</p>
+      <pre><code class="language-bash"># List all available skills
+bunx skz list
+
+# Add a specific skill
+bunx skz add linear-issues-read
+
+# Add all skills in a domain
+bunx skz add linear</code></pre>
+
+      <h2 class="text-xl font-semibold mt-8 mb-4 pb-2 border-b border-zinc-800">Adding Agents</h2>
+      <p class="text-zinc-400 mb-4">Agents provide specialized capabilities via MCP servers:</p>
+      <pre><code class="language-bash"># List available agents
+bunx skz list --agents
+
+# Add an agent
+bunx skz agent docs</code></pre>
+
+      <h2 class="text-xl font-semibold mt-8 mb-4 pb-2 border-b border-zinc-800">Using Skills</h2>
+      <p class="text-zinc-400 mb-4">Once installed, skills add new commands that your AI agent can use. For example:</p>
+      <pre><code class="language-bash"># List Linear issues (via linear-issues-read skill)
+bun .opencode/skill/linear-issues-read/list-issues.ts --team Engineering
+
+# Run a code review (via code-review skill)  
+/code-review</code></pre>
+
+      <h2 class="text-xl font-semibold mt-8 mb-4 pb-2 border-b border-zinc-800">Supported Platforms</h2>
+      <div class="grid gap-4 mt-4">
+        <div class="p-4 rounded-lg border border-zinc-800">
+          <h3 class="font-medium mb-2">OpenCode</h3>
+          <p class="text-sm text-zinc-400">Full support. Skills are installed to <code>.opencode/skill/</code></p>
+        </div>
+        <div class="p-4 rounded-lg border border-zinc-800">
+          <h3 class="font-medium mb-2">Claude Code</h3>
+          <p class="text-sm text-zinc-400">Full support. Run <code>bunx skz init --claude</code> or init in a directory with <code>.claude/</code></p>
+        </div>
+      </div>
+
+      <h2 class="text-xl font-semibold mt-8 mb-4 pb-2 border-b border-zinc-800">Requirements</h2>
+      <ul class="list-disc list-inside text-zinc-400 space-y-2">
+        <li><a href="https://bun.sh" class="text-zinc-300 underline hover:text-white">Bun</a> runtime (for running skill scripts)</li>
+        <li>Node.js 18+ (optional, for npx compatibility)</li>
+      </ul>
+    </div>
+  
+  </main>
+  <footer class="border-t border-zinc-800 mt-16">
+    <div class="max-w-6xl mx-auto px-6 py-8 text-sm text-zinc-500">
+      <p>Built for <a href="https://opencode.ai" class="underline hover:text-white">OpenCode</a> and <a href="https://claude.ai" class="underline hover:text-white">Claude Code</a></p>
+    </div>
+  </footer>
+</body>
+</html>

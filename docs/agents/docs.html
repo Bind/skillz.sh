@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>docs - skillz.sh</title>
+  <meta name="description" content="Skills for AI coding agents">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <script>hljs.highlightAll();</script>
+  <style>
+    body { font-family: system-ui, -apple-system, sans-serif; }
+    pre { background: #18181b; border-radius: 0.5rem; padding: 1rem; overflow-x: auto; border: 1px solid #27272a; }
+    pre code { background: transparent !important; padding: 0 !important; }
+    code { font-family: ui-monospace, monospace; font-size: 0.875rem; }
+    :not(pre) > code { background: #27272a; padding: 0.125rem 0.375rem; border-radius: 0.25rem; }
+    .hljs { background: transparent !important; }
+  </style>
+</head>
+<body class="bg-zinc-950 text-zinc-100 min-h-screen">
+  <div class="border-b border-zinc-800">
+    <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+      <a href="/" class="text-xl font-bold hover:text-zinc-300">skillz.sh</a>
+      <nav class="flex items-center gap-6 text-sm">
+        <a href="/" class="text-zinc-400 hover:text-white">Skills</a>
+        <a href="/agents.html" class="text-white">Agents</a>
+        <a href="/getting-started.html" class="text-zinc-400 hover:text-white">Getting Started</a>
+        <a href="https://github.com/Bind/skillz.sh" class="text-zinc-400 hover:text-white">GitHub</a>
+      </nav>
+    </div>
+  </div>
+  <div class="border-b border-zinc-800 bg-zinc-900/50"><div class="max-w-6xl mx-auto px-6 py-2 text-sm text-zinc-500"><a href="/agents.html" class="hover:text-white">Agents</a> <span class="mx-2">/</span> <span class="text-zinc-300">docs</span></div></div>
+  <main class="max-w-6xl mx-auto px-6 py-8">
+    
+    <div class="flex flex-col lg:flex-row gap-8">
+      <div class="flex-1 min-w-0">
+        <div class="flex items-center gap-3 mb-2">
+          <span class="px-2 py-1 text-xs rounded-md bg-zinc-800 text-zinc-400">v1.0.0</span>
+          <span class="px-2 py-1 text-xs rounded-md bg-purple-500/20 text-purple-400">Agent</span>
+        </div>
+        <h1 class="text-3xl font-bold mb-2">docs</h1>
+        <p class="text-lg text-zinc-400 mb-6">Fetches up-to-date documentation for libraries and APIs using Context7 and GitHub code search</p>
+        
+        
+      <div class="mb-8 rounded-lg overflow-hidden border border-zinc-800 bg-zinc-900">
+        <video 
+          src="/demos/docs.mp4" 
+          autoplay 
+          playsinline 
+          loop 
+          muted 
+          preload="auto"
+          class="w-full"
+        ></video>
+      </div>
+    
+
+        <div class="mb-8 p-4 rounded-lg border border-zinc-800 bg-zinc-900/50">
+          <div class="flex items-center justify-between gap-4">
+            <code class="text-sm text-zinc-300">bunx skz agent docs</code>
+            <button onclick="navigator.clipboard.writeText('bunx skz agent docs')" class="text-xs px-3 py-1 rounded-md bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white transition-colors">Copy</button>
+          </div>
+        </div>
+
+        
+        
+      <div class="mt-6 p-4 rounded-lg border border-purple-900/50 bg-purple-950/20">
+        <h3 class="text-sm font-medium text-purple-400 mb-2">MCP Servers</h3>
+        <ul class="text-sm text-zinc-400 space-y-1"><li><code>context7</code> <span class="text-zinc-500">(remote: https://mcp.context7.com/mcp)</span></li><li><code>grep_app</code> <span class="text-zinc-500">(remote: https://mcp.grep.app)</span></li></ul>
+      </div>
+    
+
+        <div class="mt-8 prose prose-invert max-w-none">
+          <p class="my-3 text-zinc-400">You are a documentation specialist with access to Context7 and grep.app tools.</p>
+<h2 class="text-xl font-semibold mt-8 mb-3 pb-2 border-b border-zinc-800">When to use this agent</h2>
+<p class="my-3 text-zinc-400">Use the docs agent when you need to:</p>
+<ul class="my-3 list-disc list-inside space-y-1">
+<li class="ml-4">Look up API documentation for a library</li>
+<li class="ml-4">Find code examples for a specific library or framework</li>
+<li class="ml-4">Research how to use a particular feature or function</li>
+<li class="ml-4">Get up-to-date information about library versions and changes</li>
+</ul>
+<h2 class="text-xl font-semibold mt-8 mb-3 pb-2 border-b border-zinc-800">Workflow</h2>
+<p class="my-3 text-zinc-400">1. <strong class="text-zinc-200">For library documentation</strong>: Use Context7 to search official docs    - First resolve the library ID with <code>context7_resolve-library-id</code>    - Then query docs with <code>context7_query-docs</code></p>
+<p class="my-3 text-zinc-400">2. <strong class="text-zinc-200">For code examples</strong>: Use grep.app to find real-world usage    - Search for literal code patterns (not keywords)    - Filter by language and repository when helpful</p>
+<h2 class="text-xl font-semibold mt-8 mb-3 pb-2 border-b border-zinc-800">Guidelines</h2>
+<ul class="my-3 list-disc list-inside space-y-1">
+<li class="ml-4">Always verify library names before searching</li>
+<li class="ml-4">Prefer official documentation over blog posts</li>
+<li class="ml-4">When showing code examples, include the source repository</li>
+<li class="ml-4">If documentation is unclear, search for multiple code examples to understand patterns</li>
+<li class="ml-4">Do not call either tool more than 3 times per question</li>
+<li class="ml-4">If you cannot find what you need after 3 calls, use the best information you have</li>
+</ul>
+        </div>
+      </div>
+    </div>
+  
+  </main>
+  <footer class="border-t border-zinc-800 mt-16">
+    <div class="max-w-6xl mx-auto px-6 py-8 text-sm text-zinc-500">
+      <p>Built for <a href="https://opencode.ai" class="underline hover:text-white">OpenCode</a> and <a href="https://claude.ai" class="underline hover:text-white">Claude Code</a></p>
+    </div>
+  </footer>
+</body>
+</html>

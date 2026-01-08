@@ -48,6 +48,8 @@ export interface RegistryAgent {
   mcp?: Record<string, McpConfig>;
   /** Required skills to install */
   skills?: string[];
+  /** Demo video filename (e.g., "demo.mp4") */
+  demo?: string;
 }
 
 /** Registry format v2 - CDN-friendly with file manifests */
