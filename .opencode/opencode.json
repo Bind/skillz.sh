@@ -8,6 +8,11 @@
     "grep_app": {
       "type": "remote",
       "url": "https://mcp.grep.app"
+    },
+    "playwriter": {
+      "type": "local",
+      "command": ["npx", "playwriter@latest"],
+      "enabled": false
     }
   }
 }

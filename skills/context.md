@@ -1,0 +1,1 @@
+This directory holds just the skill metadata that feeds the registry. Every skill needs a `SKILL.md`, optional `skill.json`, and any supporting `command/`, `agent/`, or static files used by docs or installations.

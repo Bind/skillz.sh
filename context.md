@@ -1,0 +1,1 @@
+skillz.sh is the registry for distributable agent skills and tooling for OpenCode/Claude Code workflows. Keep this repo in sync with the published registry so agents can install updated skills and docs without surprises. The repo is structured around `skills/` (skill metadata), `src/` (source implementations), `docs/` (static site), and `cli/` (the `skz` installer).

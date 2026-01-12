@@ -1,0 +1,7 @@
+{
+  "domain": "docs",
+  "entry": {
+    "tree": "src/context-tree/tree.ts"
+  },
+  "utils": ["utils"]
+}

@@ -6,7 +6,11 @@
   "scripts": {
     "build": "bun run build.ts",
     "build:clean": "bun run build.ts --clean",
-    "build:publish": "bun run build.ts && bun run publish.ts"
+    "build:publish": "bun run build.ts && bun run publish.ts",
+    "build:docs": "cd docs && npm run build",
+    "build:all": "bun run build.ts && npm run build:docs",
+    "serve": "bun scripts/serve.ts",
+    "watch": "bun run --watch build.ts"
   },
   "devDependencies": {
     "@linear/sdk": "^29.0.0",

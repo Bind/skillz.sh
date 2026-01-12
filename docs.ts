@@ -208,7 +208,7 @@ function escapeHtml(text: string): string {
 // HTML Templates
 // ============================================================================
 
-function baseTemplate(title: string, content: string, breadcrumb?: string, activePage?: string): string {
+function baseTemplate(title: string, content: string, breadcrumb?: string, activePage?: string, sidebarHtml?: string): string {
   const navLinks = [
     { href: "/", label: "Skills", id: "skills" },
     { href: "/agents.html", label: "Agents", id: "agents" },
@@ -222,7 +222,7 @@ function baseTemplate(title: string, content: string, breadcrumb?: string, activ
       const classes = isActive ? "text-white" : "text-zinc-400 hover:text-white";
       return `<a href="${href}" class="${classes}">${label}</a>`;
     })
-    .join("\n        ");
+    .join('\n        ');
 
   return `<!DOCTYPE html>
 <html lang="en" class="dark">
@@ -245,23 +245,24 @@ function baseTemplate(title: string, content: string, breadcrumb?: string, activ
   </style>
 </head>
 <body class="bg-zinc-950 text-zinc-100 min-h-screen">
-  <div class="border-b border-zinc-800">
-    <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
-      <a href="/" class="text-xl font-bold hover:text-zinc-300">skillz.sh</a>
+  <header class="border-b border-zinc-800">
+    <div class="flex items-center px-6 py-4">
+      <a href="/" class="text-xl font-mono font-bold hover:text-zinc-300 tracking-tight mr-8">SKZ</a>
       <nav class="flex items-center gap-6 text-sm">
         ${navHtml}
       </nav>
     </div>
+  </header>
+  <div class="flex">
+    ${sidebarHtml ? `
+    <aside class="w-48 flex-shrink-0 py-6 pl-6 pr-4">
+      ${sidebarHtml}
+    </aside>
+    ` : ""}
+    <main class="flex-1 max-w-4xl mx-auto py-8 pr-6">
+      ${content}
+    </main>
   </div>
-  ${breadcrumb ? `<div class="border-b border-zinc-800 bg-zinc-900/50"><div class="max-w-6xl mx-auto px-6 py-2 text-sm text-zinc-500">${breadcrumb}</div></div>` : ""}
-  <main class="max-w-6xl mx-auto px-6 py-8">
-    ${content}
-  </main>
-  <footer class="border-t border-zinc-800 mt-16">
-    <div class="max-w-6xl mx-auto px-6 py-8 text-sm text-zinc-500">
-      <p>Built for <a href="https://opencode.ai" class="underline hover:text-white">OpenCode</a> and <a href="https://claude.ai" class="underline hover:text-white">Claude Code</a></p>
-    </div>
-  </footer>
 </body>
 </html>`;
 }
@@ -283,38 +284,39 @@ function indexPage(registry: Registry): string {
     return a.localeCompare(b);
   });
 
-  // Domain icons
-  const domainIcons: Record<string, string> = {
-    linear: "L",
-    github: "G",
-    browser: "B",
-    database: "D",
-    terminal: "T",
-    docs: "D",
-    other: "O",
+  // Domain colors
+  const domainColors: Record<string, string> = {
+    linear: "text-indigo-400",
+    github: "text-zinc-400",
+    browser: "text-orange-400",
+    database: "text-emerald-400",
+    terminal: "text-yellow-400",
+    docs: "text-blue-400",
+    other: "text-zinc-400",
   };
 
-  const domainColors: Record<string, string> = {
-    linear: "bg-indigo-500/20 text-indigo-400",
-    github: "bg-zinc-500/20 text-zinc-400",
-    browser: "bg-orange-500/20 text-orange-400",
-    database: "bg-emerald-500/20 text-emerald-400",
-    terminal: "bg-yellow-500/20 text-yellow-400",
-    docs: "bg-blue-500/20 text-blue-400",
-    other: "bg-zinc-500/20 text-zinc-400",
-  };
+  // Build domain sidebar
+  const sidebarHtml = `
+    <nav class="space-y-1">
+      ${domains.map(domain => {
+        return `
+          <a href="#domain-${domain}" class="flex items-center px-3 py-2 text-sm rounded-md text-zinc-400 hover:text-white hover:bg-zinc-900/50 transition-colors">
+            <span class="capitalize">${domain}</span>
+          </a>
+        `;
+      }).join("")}
+    </nav>
+  `;
 
   let skillsHtml = "";
   for (const domain of domains) {
     const skills = byDomain.get(domain)!;
-    const icon = domainIcons[domain] ?? domain[0]?.toUpperCase() ?? "?";
     const colorClass = domainColors[domain] ?? domainColors.other;
 
     skillsHtml += `
-      <div class="mb-12">
+      <section id="domain-${domain}" class="mb-12">
         <div class="flex items-center gap-3 mb-4">
-          <div class="w-8 h-8 rounded-md ${colorClass} flex items-center justify-center text-sm font-bold">${icon}</div>
-          <h2 class="text-lg font-semibold capitalize">${domain}</h2>
+          <h2 class="text-lg font-semibold capitalize ${colorClass}">${domain}</h2>
           <span class="text-sm text-zinc-500">${skills.length} skill${skills.length === 1 ? "" : "s"}</span>
         </div>
         <div class="grid gap-3">
@@ -339,24 +341,18 @@ function indexPage(registry: Registry): string {
             )
             .join("")}
         </div>
-      </div>
+      </section>
     `;
   }
 
   const content = `
-    <div class="mb-12">
-      <h1 class="text-4xl font-bold mb-4">Skills</h1>
-      <p class="text-lg text-zinc-400 max-w-2xl">
-        Installable capabilities for AI coding agents. Each skill adds new tools and workflows to your agent.
-      </p>
-      <div class="mt-6 flex items-center gap-4">
-        <code class="text-sm bg-zinc-900 px-4 py-2 rounded-lg border border-zinc-800">bunx skz add &lt;skill-name&gt;</code>
-      </div>
+    <div class="mb-8">
+      <code class="text-sm bg-zinc-900 px-4 py-2 rounded-lg border border-zinc-800 font-mono">bunx skz add &lt;skill-name&gt;</code>
     </div>
     ${skillsHtml}
   `;
 
-  return baseTemplate("Skills", content, undefined, "skills");
+  return baseTemplate("Skills", content, undefined, "skills", sidebarHtml);
 }
 
 function skillPage(skill: RegistrySkill, content: string): string {
@@ -364,8 +360,8 @@ function skillPage(skill: RegistrySkill, content: string): string {
 
   // Metadata badges
   const badges: string[] = [];
-  badges.push(`<span class="px-2 py-1 text-xs rounded-md bg-zinc-800 text-zinc-400">v${skill.version}</span>`);
-  badges.push(`<span class="px-2 py-1 text-xs rounded-md bg-zinc-800 text-zinc-400 capitalize">${domain}</span>`);
+  badges.push(`<span class="text-xs px-2.5 py-0.5 rounded-md bg-zinc-800 text-zinc-400">v${skill.version}</span>`);
+  badges.push(`<span class="text-xs px-2.5 py-0.5 rounded-md bg-zinc-800 text-zinc-400 capitalize">${domain}</span>`);
 
   // Install command
   const installCmd = `bunx skz add ${skill.name}`;
@@ -377,7 +373,7 @@ function skillPage(skill: RegistrySkill, content: string): string {
       .map(([name, version]) => `<li><code>${name}</code> <span class="text-zinc-500">${version}</span></li>`)
       .join("");
     depsHtml = `
-      <div class="mt-6 p-4 rounded-lg border border-zinc-800 bg-zinc-900/50">
+      <div class="mt-6 p-4 rounded-xl border border-zinc-800 bg-zinc-900/30">
         <h3 class="text-sm font-medium text-zinc-300 mb-2">Dependencies</h3>
         <ul class="text-sm text-zinc-400 space-y-1">${depsList}</ul>
       </div>
@@ -388,7 +384,7 @@ function skillPage(skill: RegistrySkill, content: string): string {
   let requiresHtml = "";
   if (skill.requires && skill.requires.length > 0) {
     const reqList = skill.requires
-      .map((r) => `<a href="/skills/${r}.html" class="text-zinc-300 underline hover:text-white">${r}</a>`)
+      .map((r) => `<a href="/skills/${r}.html" class="text-zinc-300 underline hover:text-white transition-colors">${r}</a>`)
       .join(", ");
     requiresHtml = `
       <div class="mt-4 text-sm text-zinc-500">
@@ -401,7 +397,7 @@ function skillPage(skill: RegistrySkill, content: string): string {
   let setupHtml = "";
   if (skill.setup?.instructions) {
     setupHtml = `
-      <div class="mt-6 p-4 rounded-lg border border-amber-900/50 bg-amber-950/20">
+      <div class="mt-6 p-4 rounded-xl border border-amber-900/30 bg-amber-950/20">
         <h3 class="text-sm font-medium text-amber-400 mb-2">Setup Required</h3>
         <p class="text-sm text-zinc-400">${skill.setup.instructions}</p>
       </div>
@@ -435,35 +431,42 @@ function skillPage(skill: RegistrySkill, content: string): string {
   const parsedContent = parseMarkdown(content);
 
   const pageContent = `
-    <div class="flex flex-col lg:flex-row gap-8">
-      <div class="flex-1 min-w-0">
-        <div class="flex items-center gap-3 mb-2">
+    <div class="max-w-4xl">
+      <!-- Header -->
+      <div class="mb-8">
+        <div class="flex items-center gap-3 mb-3">
           ${badges.join("")}
         </div>
-        <h1 class="text-3xl font-bold mb-2">${skill.name}</h1>
-        <p class="text-lg text-zinc-400 mb-6">${skill.description}</p>
-        
-        <div class="mb-8 p-4 rounded-lg border border-zinc-800 bg-zinc-900/50">
-          <div class="flex items-center justify-between gap-4">
-            <code class="text-sm text-zinc-300">${installCmd}</code>
-            <button onclick="navigator.clipboard.writeText('${installCmd}')" class="text-xs px-3 py-1 rounded-md bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white transition-colors">Copy</button>
-          </div>
+        <h1 class="text-4xl font-bold mb-3 tracking-tight">${skill.name}</h1>
+        <p class="text-lg text-zinc-400 leading-relaxed">${skill.description}</p>
+      </div>
+      
+      <!-- Install Command -->
+      <div class="mb-8 p-1 rounded-xl bg-gradient-to-r from-zinc-800/50 to-zinc-800/20">
+        <div class="flex items-center justify-between gap-4 p-4 rounded-lg bg-zinc-900/80">
+          <code class="text-sm text-zinc-300 font-mono">${installCmd}</code>
+          <button onclick="navigator.clipboard.writeText('${installCmd}')" class="text-xs px-3 py-1.5 rounded-md bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white transition-colors">
+            Copy
+          </button>
         </div>
+      </div>
 
-        ${requiresHtml}
-        ${envHtml}
-        ${entryHtml}
-        ${setupHtml}
-        ${depsHtml}
+      ${requiresHtml}
+      ${envHtml}
+      ${entryHtml}
+      ${setupHtml}
+      ${depsHtml}
 
-        <div class="mt-8 prose prose-invert max-w-none">
+      <!-- Content -->
+      <div class="mt-10">
+        <div class="prose prose-invert max-w-none prose-headings:font-semibold prose-a:text-zinc-300 prose-a:underline hover:prose-a:text-white prose-code:bg-zinc-800 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:before:content-none prose-code:after:content-none">
           ${parsedContent}
         </div>
       </div>
     </div>
   `;
 
-  const breadcrumb = `<a href="/" class="hover:text-white">Skills</a> <span class="mx-2">/</span> <span class="text-zinc-300">${skill.name}</span>`;
+  const breadcrumb = `<a href="/" class="hover:text-white transition-colors">Skills</a> <span class="mx-2 text-zinc-600">/</span> <span class="text-zinc-300">${skill.name}</span>`;
 
   return baseTemplate(skill.name, pageContent, breadcrumb, "skills");
 }
@@ -472,34 +475,41 @@ function agentsPage(registry: Registry): string {
   const agents = registry.agents;
 
   const agentsHtml = agents.map((agent) => `
-    <a href="/agents/${agent.name}.html" class="block p-4 rounded-lg border border-zinc-800 hover:border-zinc-700 hover:bg-zinc-900/50 transition-colors">
-      <div class="flex items-start justify-between gap-4">
-        <div class="flex-1 min-w-0">
-          <div class="flex items-center gap-2">
-            <h3 class="font-medium text-zinc-100">${agent.name}</h3>
-            <span class="text-xs px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-400">v${agent.version}</span>
-          </div>
-          <p class="text-sm text-zinc-500 mt-1 line-clamp-2">${agent.description}</p>
-          ${agent.mcp ? `<div class="mt-2 flex gap-2">${Object.keys(agent.mcp).map(m => `<span class="text-xs px-2 py-0.5 rounded bg-purple-500/20 text-purple-400">${m}</span>`).join("")}</div>` : ""}
+    <a href="/agents/${agent.name}.html" class="group relative flex items-center justify-between p-4 rounded-xl border border-zinc-800 bg-zinc-900/30 hover:bg-zinc-900/60 hover:border-zinc-700 transition-all duration-200">
+      <div class="flex-1 min-w-0">
+        <div class="flex items-center gap-3">
+          <h3 class="font-semibold text-zinc-100 group-hover:text-white transition-colors">${agent.name}</h3>
+          <span class="text-xs px-2.5 py-0.5 rounded-full bg-zinc-800 text-zinc-400 group-hover:bg-zinc-700 group-hover:text-zinc-300 transition-colors">v${agent.version}</span>
         </div>
-        <svg class="w-5 h-5 text-zinc-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-        </svg>
+        <p class="text-sm text-zinc-500 mt-1 line-clamp-2 group-hover:text-zinc-400 transition-colors">${agent.description}</p>
+        ${agent.mcp ? `<div class="mt-2 flex gap-2">${Object.keys(agent.mcp).map(m => `<span class="text-xs px-2 py-0.5 rounded bg-purple-500/15 text-purple-400 border border-purple-500/20">${m}</span>`).join("")}</div>` : ""}
+      </div>
+      <div class="flex-shrink-0 ml-4">
+        <div class="w-8 h-8 rounded-lg bg-zinc-800 group-hover:bg-zinc-700 flex items-center justify-center text-zinc-500 group-hover:text-zinc-300 transition-all duration-200 transform group-hover:translate-x-1">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+          </svg>
+        </div>
       </div>
     </a>
   `).join("");
 
   const content = `
+    <!-- Hero Section -->
     <div class="mb-12">
-      <h1 class="text-4xl font-bold mb-4">Agents</h1>
-      <p class="text-lg text-zinc-400 max-w-2xl">
+      <h1 class="text-4xl font-bold mb-4 tracking-tight">Agents</h1>
+      <p class="text-lg text-zinc-400 max-w-2xl leading-relaxed">
         Specialized agents that extend your AI coding assistant with new capabilities via MCP servers.
       </p>
       <div class="mt-6 flex items-center gap-4">
-        <code class="text-sm bg-zinc-900 px-4 py-2 rounded-lg border border-zinc-800">bunx skz agent &lt;agent-name&gt;</code>
+        <code class="flex items-center gap-2 text-sm bg-zinc-900 px-4 py-2.5 rounded-lg border border-zinc-800 font-mono text-zinc-300">
+          <span class="text-zinc-500">$</span> bunx skz agent &lt;agent-name&gt;
+        </code>
       </div>
     </div>
-    <div class="grid gap-3">
+    
+    <!-- Agents Grid -->
+    <div class="grid gap-3 max-w-4xl">
       ${agentsHtml}
     </div>
   `;
@@ -510,50 +520,20 @@ function agentsPage(registry: Registry): string {
 function agentPage(agent: RegistryAgent, content: string): string {
   const installCmd = `bunx skz agent ${agent.name}`;
 
-  // Demo video (hero style)
-  let demoHtml = "";
-  if (agent.demo) {
-    demoHtml = `
-      <div class="mb-8 rounded-lg overflow-hidden border border-zinc-800 bg-zinc-900">
-        <video 
-          src="/demos/${agent.name}.mp4" 
-          autoplay 
-          playsinline 
-          loop 
-          muted 
-          preload="auto"
-          class="w-full"
-        ></video>
-      </div>
-    `;
-  }
-
   // MCP servers
   let mcpHtml = "";
   if (agent.mcp && Object.keys(agent.mcp).length > 0) {
     const mcpList = Object.entries(agent.mcp)
       .map(([name, config]) => {
         const cfg = config as { type: string; url?: string };
-        return `<li><code>${name}</code> <span class="text-zinc-500">(${cfg.type}${cfg.url ? `: ${cfg.url}` : ""})</span></li>`;
+        const urlPart = cfg.url ? ` <span class="text-zinc-500">(remote: ${cfg.url})</span>` : "";
+        return `<li><span class="font-mono text-purple-400">${name}</span>${urlPart}</li>`;
       })
       .join("");
     mcpHtml = `
-      <div class="mt-6 p-4 rounded-lg border border-purple-900/50 bg-purple-950/20">
-        <h3 class="text-sm font-medium text-purple-400 mb-2">MCP Servers</h3>
+      <div class="mb-10 p-4 rounded-xl border border-zinc-800 bg-zinc-900/30">
+        <h3 class="text-sm font-medium text-zinc-300 mb-2">MCP Servers</h3>
         <ul class="text-sm text-zinc-400 space-y-1">${mcpList}</ul>
-      </div>
-    `;
-  }
-
-  // Required skills
-  let skillsHtml = "";
-  if (agent.skills && agent.skills.length > 0) {
-    const skillsList = agent.skills
-      .map((s) => `<a href="/skills/${s}.html" class="text-zinc-300 underline hover:text-white">${s}</a>`)
-      .join(", ");
-    skillsHtml = `
-      <div class="mt-4 text-sm text-zinc-500">
-        <span class="text-zinc-400">Requires skills:</span> ${skillsList}
       </div>
     `;
   }
@@ -561,35 +541,55 @@ function agentPage(agent: RegistryAgent, content: string): string {
   const parsedContent = parseMarkdown(content);
 
   const pageContent = `
-    <div class="flex flex-col lg:flex-row gap-8">
-      <div class="flex-1 min-w-0">
-        <div class="flex items-center gap-3 mb-2">
-          <span class="px-2 py-1 text-xs rounded-md bg-zinc-800 text-zinc-400">v${agent.version}</span>
-          <span class="px-2 py-1 text-xs rounded-md bg-purple-500/20 text-purple-400">Agent</span>
-        </div>
-        <h1 class="text-3xl font-bold mb-2">${agent.name}</h1>
-        <p class="text-lg text-zinc-400 mb-6">${agent.description}</p>
-        
-        ${demoHtml}
+    <!-- Hero Section -->
+    <div class="mb-10">
+      <h1 class="text-5xl font-bold tracking-tight mb-4 text-white">
+        ${agent.name}
+      </h1>
+      <p class="text-xl text-zinc-400 max-w-2xl leading-relaxed">
+        ${agent.description}
+      </p>
+    </div>
 
-        <div class="mb-8 p-4 rounded-lg border border-zinc-800 bg-zinc-900/50">
-          <div class="flex items-center justify-between gap-4">
-            <code class="text-sm text-zinc-300">${installCmd}</code>
-            <button onclick="navigator.clipboard.writeText('${installCmd}')" class="text-xs px-3 py-1 rounded-md bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white transition-colors">Copy</button>
-          </div>
+    <!-- Install Command - Primary CTA -->
+    <div class="mb-10">
+      <div class="flex items-center gap-2 text-sm font-medium text-zinc-400 mb-3">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+        </svg>
+        <span>Install agent</span>
+      </div>
+      <div class="group relative">
+        <div class="absolute -inset-0.5 bg-gradient-to-r from-purple-600 to-purple-500 rounded-lg opacity-20 group-hover:opacity-40 transition-opacity duration-300"></div>
+        <div class="relative flex items-center justify-between gap-4 p-4 rounded-lg border border-zinc-800 bg-zinc-900/80 backdrop-blur">
+          <code class="text-base text-zinc-200 font-mono">${installCmd}</code>
+          <button
+            onclick="navigator.clipboard.writeText('${installCmd}')"
+            class="flex items-center gap-2 px-4 py-2 rounded-md bg-purple-600 hover:bg-purple-500 text-white text-sm font-medium transition-all active:scale-95"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+            </svg>
+            <span>Copy</span>
+          </button>
         </div>
+      </div>
+    </div>
 
-        ${skillsHtml}
-        ${mcpHtml}
+    <!-- MCP Servers -->
+    ${mcpHtml}
 
-        <div class="mt-8 prose prose-invert max-w-none">
-          ${parsedContent}
-        </div>
+    <hr class="border-zinc-800 my-10">
+
+    <!-- Documentation Content -->
+    <div class="max-w-3xl">
+      <div class="prose prose-invert max-w-none prose-headings:font-semibold prose-a:text-zinc-300 prose-a:underline hover:prose-a:text-white prose-code:bg-zinc-800 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:before:content-none prose-code:after:content-none">
+        ${parsedContent}
       </div>
     </div>
   `;
 
-  const breadcrumb = `<a href="/agents.html" class="hover:text-white">Agents</a> <span class="mx-2">/</span> <span class="text-zinc-300">${agent.name}</span>`;
+  const breadcrumb = `<a href="/agents.html" class="hover:text-white transition-colors">Agents</a> <span class="mx-2 text-zinc-600">/</span> <span class="text-zinc-300">${agent.name}</span>`;
 
   return baseTemplate(agent.name, pageContent, breadcrumb, "agents");
 }
@@ -597,19 +597,27 @@ function agentPage(agent: RegistryAgent, content: string): string {
 function gettingStartedPage(): string {
   const content = `
     <div class="max-w-3xl">
-      <h1 class="text-4xl font-bold mb-4">Getting Started</h1>
-      <p class="text-lg text-zinc-400 mb-8">
-        Install skills and agents for your AI coding assistant in minutes.
-      </p>
+      <!-- Hero -->
+      <div class="mb-10">
+        <h1 class="text-4xl font-bold mb-4 tracking-tight">Getting Started</h1>
+        <p class="text-lg text-zinc-400 leading-relaxed">
+          Install skills and agents for your AI coding assistant in minutes.
+        </p>
+      </div>
 
-      <h2 class="text-xl font-semibold mt-8 mb-4 pb-2 border-b border-zinc-800">Installation</h2>
-      <p class="text-zinc-400 mb-4">Initialize skillz in your project:</p>
-      <pre><code class="language-bash">bunx skz init</code></pre>
-      <p class="text-zinc-400 mt-4 mb-4">This creates a <code>.opencode/skz.json</code> config file and sets up the required directories.</p>
+      <!-- Installation Section -->
+      <section class="mb-12">
+        <h2 class="text-xl font-semibold mb-4 pb-2 border-b border-zinc-800">Installation</h2>
+        <p class="text-zinc-400 mb-4">Initialize skillz in your project:</p>
+        <pre class="mb-4"><code class="language-bash">bunx skz init</code></pre>
+        <p class="text-zinc-400 mt-4 mb-4">This creates a <code>.opencode/skz.json</code> config file and sets up the required directories.</p>
+      </section>
 
-      <h2 class="text-xl font-semibold mt-8 mb-4 pb-2 border-b border-zinc-800">Adding Skills</h2>
-      <p class="text-zinc-400 mb-4">Browse available skills and add them to your project:</p>
-      <pre><code class="language-bash"># List all available skills
+      <!-- Adding Skills Section -->
+      <section class="mb-12">
+        <h2 class="text-xl font-semibold mb-4 pb-2 border-b border-zinc-800">Adding Skills</h2>
+        <p class="text-zinc-400 mb-4">Browse available skills and add them to your project:</p>
+        <pre class="mb-3"><code class="language-bash"># List all available skills
 bunx skz list
 
 # Add a specific skill
@@ -617,40 +625,53 @@ bunx skz add linear-issues-read
 
 # Add all skills in a domain
 bunx skz add linear</code></pre>
+      </section>
 
-      <h2 class="text-xl font-semibold mt-8 mb-4 pb-2 border-b border-zinc-800">Adding Agents</h2>
-      <p class="text-zinc-400 mb-4">Agents provide specialized capabilities via MCP servers:</p>
-      <pre><code class="language-bash"># List available agents
+      <!-- Adding Agents Section -->
+      <section class="mb-12">
+        <h2 class="text-xl font-semibold mb-4 pb-2 border-b border-zinc-800">Adding Agents</h2>
+        <p class="text-zinc-400 mb-4">Agents provide specialized capabilities via MCP servers:</p>
+        <pre class="mb-3"><code class="language-bash"># List available agents
 bunx skz list --agents
 
 # Add an agent
 bunx skz agent docs</code></pre>
+      </section>
 
-      <h2 class="text-xl font-semibold mt-8 mb-4 pb-2 border-b border-zinc-800">Using Skills</h2>
-      <p class="text-zinc-400 mb-4">Once installed, skills add new commands that your AI agent can use. For example:</p>
-      <pre><code class="language-bash"># List Linear issues (via linear-issues-read skill)
+      <!-- Using Skills Section -->
+      <section class="mb-12">
+        <h2 class="text-xl font-semibold mb-4 pb-2 border-b border-zinc-800">Using Skills</h2>
+        <p class="text-zinc-400 mb-4">Once installed, skills add new commands that your AI agent can use. For example:</p>
+        <pre class="mb-3"><code class="language-bash"># List Linear issues (via linear-issues-read skill)
 bun .opencode/skill/linear-issues-read/list-issues.ts --team Engineering
 
 # Run a code review (via code-review skill)  
 /code-review</code></pre>
+      </section>
 
-      <h2 class="text-xl font-semibold mt-8 mb-4 pb-2 border-b border-zinc-800">Supported Platforms</h2>
-      <div class="grid gap-4 mt-4">
-        <div class="p-4 rounded-lg border border-zinc-800">
-          <h3 class="font-medium mb-2">OpenCode</h3>
-          <p class="text-sm text-zinc-400">Full support. Skills are installed to <code>.opencode/skill/</code></p>
+      <!-- Supported Platforms Section -->
+      <section class="mb-12">
+        <h2 class="text-xl font-semibold mb-4 pb-2 border-b border-zinc-800">Supported Platforms</h2>
+        <div class="grid gap-4 mt-4">
+          <div class="p-4 rounded-xl border border-zinc-800 bg-zinc-900/30">
+            <h3 class="font-medium mb-2">OpenCode</h3>
+            <p class="text-sm text-zinc-400">Full support. Skills are installed to <code>.opencode/skill/</code></p>
+          </div>
+          <div class="p-4 rounded-xl border border-zinc-800 bg-zinc-900/30">
+            <h3 class="font-medium mb-2">Claude Code</h3>
+            <p class="text-sm text-zinc-400">Full support. Run <code>bunx skz init --claude</code> or init in a directory with <code>.claude/</code></p>
+          </div>
         </div>
-        <div class="p-4 rounded-lg border border-zinc-800">
-          <h3 class="font-medium mb-2">Claude Code</h3>
-          <p class="text-sm text-zinc-400">Full support. Run <code>bunx skz init --claude</code> or init in a directory with <code>.claude/</code></p>
-        </div>
-      </div>
+      </section>
 
-      <h2 class="text-xl font-semibold mt-8 mb-4 pb-2 border-b border-zinc-800">Requirements</h2>
-      <ul class="list-disc list-inside text-zinc-400 space-y-2">
-        <li><a href="https://bun.sh" class="text-zinc-300 underline hover:text-white">Bun</a> runtime (for running skill scripts)</li>
-        <li>Node.js 18+ (optional, for npx compatibility)</li>
-      </ul>
+      <!-- Requirements Section -->
+      <section class="mb-12">
+        <h2 class="text-xl font-semibold mb-4 pb-2 border-b border-zinc-800">Requirements</h2>
+        <ul class="list-disc list-inside text-zinc-400 space-y-2">
+          <li><a href="https://bun.sh" class="text-zinc-300 underline hover:text-white transition-colors">Bun</a> runtime (for running skill scripts)</li>
+          <li>Node.js 18+ (optional, for npx compatibility)</li>
+        </ul>
+      </section>
     </div>
   `;
 

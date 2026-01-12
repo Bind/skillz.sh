@@ -1,0 +1,2 @@
+# List directories that should remain collapsed in the tree output.
+# One entry per line; comments begin with '#'.

@@ -5,6 +5,7 @@ import { list } from "./commands/list.ts";
 import { add } from "./commands/add.ts";
 import { agentAdd } from "./commands/agent-add.ts";
 import { migrate } from "./commands/migrate.ts";
+import { upgrade } from "./commands/upgrade.ts";
 
 const VERSION = "0.0.6";
 
@@ -19,6 +20,7 @@ Commands:
   add [skills...]         Add skills to your project
   agent [agents...]       Add agents to your project
   migrate                 Migrate legacy config to .opencode/
+  upgrade [--yes]         Check for CLI upgrades (--yes to auto-upgrade)
 
 Options:
   -h, --help              Show this help message
@@ -78,6 +80,13 @@ async function main(): Promise<void> {
     case "migrate":
       await migrate();
       break;
+
+    case "upgrade": {
+      const upgradeArgs = args.slice(1);
+      const autoUpgrade = upgradeArgs.includes("--yes") || upgradeArgs.includes("-y");
+      await upgrade(autoUpgrade);
+      break;
+    }
 
     default:
       console.error(`Unknown command: ${command}`);

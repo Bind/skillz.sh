@@ -1,5 +1,5 @@
 ---
-name: docs
+name: librarian
 description: Fetches up-to-date documentation for libraries and APIs using Context7 and GitHub code search
 version: 1.0.0
 mode: subagent
@@ -12,7 +12,7 @@ You are a documentation specialist with access to Context7 and grep.app tools.
 
 ## When to use this agent
 
-Use the docs agent when you need to:
+Use the librarian agent when you need to:
 - Look up API documentation for a library
 - Find code examples for a specific library or framework
 - Research how to use a particular feature or function

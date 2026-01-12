@@ -1,0 +1,1 @@
+Source implementations live here and get copied directly into users' `.opencode/skill/` folders. Each subfolder holds a skill domain, usually mirroring the metadata in `skills/`. Trust the strict TypeScript settings, include `.ts` extensions in imports, and keep runtime helpers in `utils/` so they can be shared when installed.

@@ -1,9 +1,12 @@
 # Dependencies
 node_modules/
-bun.lock
+package-lock.json
 
 # Build output
 registry/
+docs/dist/
+
+# Astro
 .astro/
 docs/.astro/
 
@@ -18,3 +21,6 @@ cli/node_modules/
 test-results/
 playwright-report/
 playwright/.cache/
+
+# OS
+.DS_Store
