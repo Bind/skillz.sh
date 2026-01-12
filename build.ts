@@ -1,20 +1,22 @@
 #!/usr/bin/env bun
 
-import { readdir, mkdir, cp, rm } from "node:fs/promises";
+import { readdir, mkdir, cp, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 
-const SKILLS_DIR = "skills";
-const AGENTS_DIR = "agents";
-const UTILS_DIR = "utils";
-const SRC_DIR = "src";
-const REGISTRY_FILE = "registry.json";
+const SKILLS_DIR = "registry/skills";
+const AGENTS_DIR = "registry/agents";
+const UTILS_DIR = "registry/utils";
+
+// Source directories (copied to registry/ during build)
+const SRC_SKILLS_DIR = "skills";
+const SRC_AGENTS_DIR = "agents";
+const SRC_UTILS_DIR = "utils";
+const REGISTRY_FILE = "registry/registry.json";
 const REGISTRY_VERSION = "2.0.0";
-const REGISTRY_BASE_PATH = "registry";
-const DOCS_DIR = "docs";
-const DOCS_REGISTRY_DIR = join(DOCS_DIR, REGISTRY_BASE_PATH);
+const DOCS_PUBLIC_DIR = "docs/public";
 
 // ============================================================================
-// Types (mirrors cli/src/types.ts for build script)
+// Types
 // ============================================================================
 
 interface SkillFiles {
@@ -83,9 +85,6 @@ interface Registry {
 // Helpers
 // ============================================================================
 
-/**
- * Parse YAML frontmatter from markdown content.
- */
 function parseFrontmatter(
   content: string,
   fileName: string
@@ -120,21 +119,6 @@ function parseFrontmatter(
   };
 }
 
-/**
- * List files in a directory (non-recursive).
- */
-async function listFiles(dirPath: string): Promise<string[]> {
-  try {
-    const entries = await readdir(dirPath, { withFileTypes: true });
-    return entries.filter((e) => e.isFile()).map((e) => e.name);
-  } catch {
-    return [];
-  }
-}
-
-/**
- * List subdirectories in a directory.
- */
 async function listDirs(dirPath: string): Promise<string[]> {
   try {
     const entries = await readdir(dirPath, { withFileTypes: true });
@@ -144,17 +128,11 @@ async function listDirs(dirPath: string): Promise<string[]> {
   }
 }
 
-/**
- * Check if a file exists.
- */
 async function fileExists(filePath: string): Promise<boolean> {
   const file = Bun.file(filePath);
   return file.exists();
 }
 
-/**
- * Read and parse a JSON file.
- */
 async function readJsonFile<T>(filePath: string): Promise<T | null> {
   const file = Bun.file(filePath);
   if (!(await file.exists())) {
@@ -171,9 +149,6 @@ async function readJsonFile<T>(filePath: string): Promise<T | null> {
 // Skill Processing
 // ============================================================================
 
-/**
- * Build file manifest for a skill by scanning its directory.
- */
 async function buildSkillFiles(
   skillName: string,
   skillJson: SkillJson | null
@@ -183,65 +158,14 @@ async function buildSkillFiles(
     skill: ["SKILL.md"],
   };
 
-  // Add skill.json if it exists
   if (skillJson) {
     files.skill.push("skill.json");
   }
 
-  // Entry points from skill.json
   if (skillJson?.entry) {
     files.entry = skillJson.entry;
   }
 
-  // Commands: scan command/ directory or use skill.json commands array
-  const commandDir = join(skillDir, "command");
-  if (skillJson?.commands && skillJson.commands.length > 0) {
-    // Use explicit commands list from skill.json
-    files.commands = {};
-    for (const cmdName of skillJson.commands) {
-      const cmdDir = join(commandDir, cmdName);
-      const cmdFiles = await listFiles(cmdDir);
-      if (cmdFiles.length > 0) {
-        files.commands[cmdName] = cmdFiles;
-      }
-    }
-  } else {
-    // Scan command/ directory for subdirectories
-    const cmdDirs = await listDirs(commandDir);
-    if (cmdDirs.length > 0) {
-      files.commands = {};
-      for (const cmdName of cmdDirs) {
-        const cmdDir = join(commandDir, cmdName);
-        const cmdFiles = await listFiles(cmdDir);
-        if (cmdFiles.length > 0) {
-          files.commands[cmdName] = cmdFiles;
-        }
-      }
-    }
-  }
-
-  // Agents: scan agent/ directory or use skill.json agents array
-  const agentDir = join(skillDir, "agent");
-  if (skillJson?.agents && skillJson.agents.length > 0) {
-    // Use explicit agents list from skill.json
-    files.agents = skillJson.agents.map((a) =>
-      a.endsWith(".md") ? a : `${a}.md`
-    );
-  } else {
-    // Scan agent/ directory for .md files
-    const agentFiles = await listFiles(agentDir);
-    const mdFiles = agentFiles.filter((f) => f.endsWith(".md"));
-    if (mdFiles.length > 0) {
-      files.agents = mdFiles;
-    }
-  }
-
-  // Static files from skill.json files array
-  if (skillJson?.files && skillJson.files.length > 0) {
-    files.static = skillJson.files;
-  }
-
-  // Clean up empty optional fields
   if (files.commands && Object.keys(files.commands).length === 0) {
     delete files.commands;
   }
@@ -258,30 +182,21 @@ async function buildSkillFiles(
   return files;
 }
 
-/**
- * Process a single skill directory and build full registry entry.
- */
 async function processSkill(skillName: string): Promise<RegistrySkill | null> {
   const skillMdPath = join(SKILLS_DIR, skillName, "SKILL.md");
   const skillJsonPath = join(SKILLS_DIR, skillName, "skill.json");
 
-  // Check for SKILL.md
   if (!(await fileExists(skillMdPath))) {
     console.log(`  Skipping ${skillName}: no SKILL.md found`);
     return null;
   }
 
-  // Parse frontmatter from SKILL.md
   const skillMdContent = await Bun.file(skillMdPath).text();
   const meta = parseFrontmatter(skillMdContent, "SKILL.md");
 
-  // Read skill.json
   const skillJson = await readJsonFile<SkillJson>(skillJsonPath);
-
-  // Build file manifest
   const files = await buildSkillFiles(skillName, skillJson);
 
-  // Build registry entry
   const skill: RegistrySkill = {
     name: meta.name,
     description: meta.description,
@@ -289,7 +204,6 @@ async function processSkill(skillName: string): Promise<RegistrySkill | null> {
     files,
   };
 
-  // Add optional fields from skill.json
   if (skillJson?.domain) {
     skill.domain = skillJson.domain;
   }
@@ -317,31 +231,22 @@ async function processSkill(skillName: string): Promise<RegistrySkill | null> {
 // Agent Processing
 // ============================================================================
 
-/**
- * Process a single agent directory and build full registry entry.
- */
 async function processAgent(agentName: string): Promise<RegistryAgent | null> {
   const agentDir = join(AGENTS_DIR, agentName);
   const agentMdPath = join(agentDir, "agent.md");
   const agentJsonPath = join(agentDir, "agent.json");
 
-  // Check for agent.md
   if (!(await fileExists(agentMdPath))) {
     console.log(`  Skipping ${agentName}: no agent.md found`);
     return null;
   }
 
-  // Parse frontmatter from agent.md
   const agentMdContent = await Bun.file(agentMdPath).text();
   const meta = parseFrontmatter(agentMdContent, "agent.md");
 
-  // List all files in agent directory
-  const allFiles = await listFiles(agentDir);
-
-  // Read agent.json if it exists
+  const allFiles = await readdir(agentDir);
   const agentJson = await readJsonFile<AgentJson>(agentJsonPath);
 
-  // Build registry entry
   const agent: RegistryAgent = {
     name: meta.name,
     description: meta.description,
@@ -349,7 +254,6 @@ async function processAgent(agentName: string): Promise<RegistryAgent | null> {
     files: allFiles,
   };
 
-  // Add optional fields from agent.json
   if (agentJson?.mcp && Object.keys(agentJson.mcp).length > 0) {
     agent.mcp = agentJson.mcp;
   }
@@ -366,12 +270,47 @@ async function processAgent(agentName: string): Promise<RegistryAgent | null> {
 // Utils Processing
 // ============================================================================
 
-/**
- * Scan utils/ directory for all .ts files.
- */
 async function scanUtils(): Promise<string[]> {
-  const files = await listFiles(UTILS_DIR);
-  return files.filter((f) => f.endsWith(".ts"));
+  try {
+    const files = await readdir(UTILS_DIR);
+    return files.filter((f) => f.endsWith(".ts"));
+  } catch {
+    return [];
+  }
+}
+
+// ============================================================================
+// Sync Source to Registry
+// ============================================================================
+
+async function syncToRegistry(): Promise<void> {
+  // Sync skills/ -> registry/skills/
+  await mkdir(SKILLS_DIR, { recursive: true });
+  const srcSkills = await listDirs(SRC_SKILLS_DIR);
+  for (const skill of srcSkills) {
+    if (skill.startsWith(".")) continue;
+    const src = join(SRC_SKILLS_DIR, skill);
+    const dest = join(SKILLS_DIR, skill);
+    await cp(src, dest, { recursive: true });
+  }
+
+  // Sync agents/ -> registry/agents/
+  await mkdir(AGENTS_DIR, { recursive: true });
+  const srcAgents = await listDirs(SRC_AGENTS_DIR);
+  for (const agent of srcAgents) {
+    if (agent.startsWith(".")) continue;
+    const src = join(SRC_AGENTS_DIR, agent);
+    const dest = join(AGENTS_DIR, agent);
+    await cp(src, dest, { recursive: true });
+  }
+
+  // Sync utils/ -> registry/utils/
+  await mkdir(UTILS_DIR, { recursive: true });
+  await cp(SRC_UTILS_DIR, UTILS_DIR, { recursive: true });
+
+  // Sync src/ -> registry/src/
+  await mkdir("registry/src", { recursive: true });
+  await cp("src", "registry/src", { recursive: true });
 }
 
 // ============================================================================
@@ -380,6 +319,10 @@ async function scanUtils(): Promise<string[]> {
 
 async function build(): Promise<void> {
   console.log("\nBuilding registry.json (v2 format)...\n");
+
+  // Sync source to registry
+  console.log("Syncing source to registry/...");
+  await syncToRegistry();
 
   // Process skills
   console.log("Skills:");
@@ -402,13 +345,7 @@ async function build(): Promise<void> {
 
   // Process agents
   console.log("\nAgents:");
-  let agentDirs: string[] = [];
-  try {
-    agentDirs = await listDirs(AGENTS_DIR);
-  } catch {
-    console.log("  No agents/ directory found");
-  }
-
+  const agentDirs = await listDirs(AGENTS_DIR);
   const agents: RegistryAgent[] = [];
 
   for (const agentName of agentDirs) {
@@ -436,7 +373,7 @@ async function build(): Promise<void> {
   const registry: Registry = {
     name: "skillz.sh",
     version: REGISTRY_VERSION,
-    basePath: REGISTRY_BASE_PATH,
+    basePath: "registry",
     skills,
     agents,
     utils,
@@ -444,79 +381,19 @@ async function build(): Promise<void> {
 
   const registryJson = JSON.stringify(registry, null, 2) + "\n";
 
-  // Write to root registry.json (for local development)
-  await Bun.write(REGISTRY_FILE, registryJson);
+  // Write to registry/registry.json
+  await mkdir("registry", { recursive: true });
+  await writeFile(REGISTRY_FILE, registryJson);
+  console.log(`\n  Wrote ${REGISTRY_FILE}`);
 
-  // Write to docs/registry.json for GitHub Pages
-  await Bun.write(join(DOCS_DIR, "registry.json"), registryJson);
-
-  // Copy source files to docs/registry/
-  console.log("\nCopying files to docs/registry/...");
-  await copyRegistryFiles();
+  // Copy to docs/public/registry.json for Astro
+  await mkdir(DOCS_PUBLIC_DIR, { recursive: true });
+  await writeFile(join(DOCS_PUBLIC_DIR, "registry.json"), registryJson);
+  console.log(`  Wrote ${join(DOCS_PUBLIC_DIR, "registry.json")}`);
 
   console.log(
     `\nGenerated ${REGISTRY_FILE} v${REGISTRY_VERSION} with ${skills.length} skill(s), ${agents.length} agent(s), and ${utils.length} util(s).\n`
   );
-}
-
-/**
- * Copy all registry files to docs/registry/ for CDN hosting.
- */
-async function copyRegistryFiles(): Promise<void> {
-  // Clean existing docs/registry/ directory
-  try {
-    await rm(DOCS_REGISTRY_DIR, { recursive: true });
-  } catch {
-    // Directory doesn't exist, that's fine
-  }
-
-  // Clean old directories that were at docs/ root (migration from old structure)
-  for (const oldDir of [SKILLS_DIR, AGENTS_DIR, UTILS_DIR, SRC_DIR]) {
-    try {
-      await rm(join(DOCS_DIR, oldDir), { recursive: true });
-    } catch {
-      // Directory doesn't exist, that's fine
-    }
-  }
-
-  // Create docs/registry/ directory
-  await mkdir(DOCS_REGISTRY_DIR, { recursive: true });
-
-  // Copy skills/
-  try {
-    await cp(SKILLS_DIR, join(DOCS_REGISTRY_DIR, SKILLS_DIR), { recursive: true });
-    console.log(`  Copied ${SKILLS_DIR}/`);
-  } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
-    console.error(`  Error copying ${SKILLS_DIR}/: ${message}`);
-  }
-
-  // Copy agents/
-  try {
-    await cp(AGENTS_DIR, join(DOCS_REGISTRY_DIR, AGENTS_DIR), { recursive: true });
-    console.log(`  Copied ${AGENTS_DIR}/`);
-  } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
-    console.error(`  Error copying ${AGENTS_DIR}/: ${message}`);
-  }
-
-  // Copy utils/
-  try {
-    await cp(UTILS_DIR, join(DOCS_REGISTRY_DIR, UTILS_DIR), { recursive: true });
-    console.log(`  Copied ${UTILS_DIR}/`);
-  } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
-    console.error(`  Error copying ${UTILS_DIR}/: ${message}`);
-  }
-
-  // Copy src/
-  try {
-    await cp(SRC_DIR, join(DOCS_REGISTRY_DIR, SRC_DIR), { recursive: true });
-    console.log(`  Copied ${SRC_DIR}/`);
-  } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
-    console.error(`  Error copying ${SRC_DIR}/: ${message}`);
-  }
 }
 
 build().catch((error) => {

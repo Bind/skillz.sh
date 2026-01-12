@@ -326,7 +326,7 @@
   ],
   "agents": [
     {
-      "name": "docs",
+      "name": "librarian",
       "description": "Fetches up-to-date documentation for libraries and APIs using Context7 and GitHub code search",
       "version": "1.0.0",
       "files": [

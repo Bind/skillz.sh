@@ -2,6 +2,11 @@
 node_modules/
 bun.lock
 
+# Build output
+registry/
+.astro/
+docs/.astro/
+
 # Source build artifacts
 src/linear/node_modules/
 

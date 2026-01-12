@@ -7,21 +7,22 @@ Guidelines for AI agents working in this repository.
 This is **skillz.sh**, a distribution system for OpenCode agent skills. It consists of:
 
 - **Skills** (`skills/`): AI agent skill definitions with SKILL.md instructions
-- **CLI** (`cli/`): The `skz` command-line tool for installing skills
+- **Agents** (`agents/`): AI agent definitions with agent.md instructions
 - **Source** (`src/`): TypeScript source files referenced by skills
 - **Utils** (`utils/`): Shared utilities copied to user projects
+- **CLI** (`cli/`): The `skz` command-line tool for installing skills
+- **Registry** (`registry/`): **Generated** - do not edit directly. Built from source directories.
 
 ## Build Commands
 
 ### Root Project
 
 ```bash
-# Generate registry.json from skills/
+# Generate registry/ and registry.json from source directories
 bun run build
-
-# Same, but clean first
-bun run build:clean
 ```
+
+The build script syncs `skills/`, `agents/`, `utils/`, and `src/` into `registry/`, then generates `registry.json`. The `registry/` directory is gitignored and should never be edited directly.
 
 ### CLI (`cli/`)
 
