@@ -1,0 +1,101 @@
+---
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout title="Getting Started" activePage="getting-started">
+  <main class="flex-1 py-12 px-8">
+    <div class="max-w-3xl mx-auto">
+      <h1 class="text-3xl font-bold mb-2 tracking-tight text-zinc-900">Getting Started</h1>
+      <p class="text-lg text-zinc-500 mb-10">
+        Install and configure skz for your AI coding assistant.
+      </p>
+
+      <!-- Step 1 -->
+      <div class="mb-10">
+        <h3 class="flex items-center gap-3 text-lg font-semibold text-zinc-900 mb-3">
+          <span class="flex items-center justify-center w-7 h-7 rounded-full bg-zinc-900 text-white text-sm font-medium">1</span>
+          Initialize your project
+        </h3>
+        <p class="text-zinc-600 mb-4 ml-10">
+          Run the <code class="bg-zinc-100 px-1.5 py-0.5 rounded text-sm font-mono">init</code> command to set up skz in your project:
+        </p>
+        <div class="ml-10 relative group">
+          <pre class="bg-zinc-950 text-zinc-50 rounded-lg p-4 pr-12 overflow-x-auto"><code class="text-sm font-mono">bunx @bind/skillz init</code></pre>
+          <button
+            onclick="navigator.clipboard.writeText('bunx @bind/skillz init')"
+            class="absolute top-3 right-3 p-2 rounded-md text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 transition-colors opacity-0 group-hover:opacity-100"
+            title="Copy to clipboard"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+            </svg>
+          </button>
+        </div>
+        <p class="text-zinc-500 text-sm mt-3 ml-10">
+          This creates a <code class="bg-zinc-100 px-1.5 py-0.5 rounded text-xs font-mono">.opencode/skz.json</code> config file.
+        </p>
+      </div>
+
+      <!-- Step 2 -->
+      <div class="mb-10">
+        <h3 class="flex items-center gap-3 text-lg font-semibold text-zinc-900 mb-3">
+          <span class="flex items-center justify-center w-7 h-7 rounded-full bg-zinc-900 text-white text-sm font-medium">2</span>
+          Add skills
+        </h3>
+        <p class="text-zinc-600 mb-4 ml-10">
+          Add skills to your project using the <code class="bg-zinc-100 px-1.5 py-0.5 rounded text-sm font-mono">add</code> command:
+        </p>
+        <div class="ml-10 relative group">
+          <pre class="bg-zinc-950 text-zinc-50 rounded-lg p-4 pr-12 overflow-x-auto"><code class="text-sm font-mono">bunx @bind/skillz add linear-issues-read</code></pre>
+          <button
+            onclick="navigator.clipboard.writeText('bunx @bind/skillz add linear-issues-read')"
+            class="absolute top-3 right-3 p-2 rounded-md text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 transition-colors opacity-0 group-hover:opacity-100"
+            title="Copy to clipboard"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+            </svg>
+          </button>
+        </div>
+        <p class="text-zinc-500 text-sm mt-3 ml-10">
+          Or run <code class="bg-zinc-100 px-1.5 py-0.5 rounded text-xs font-mono">bunx @bind/skillz add</code> without arguments for an interactive picker.
+        </p>
+      </div>
+
+      <!-- Platforms -->
+      <div class="mt-16 pt-8 border-t border-zinc-200">
+        <h2 class="text-xl font-semibold mb-6 text-zinc-900">Supported Platforms</h2>
+        <div class="grid sm:grid-cols-2 gap-4">
+          <div class="p-5 rounded-lg border border-zinc-200 hover:border-zinc-300 transition-colors">
+            <h3 class="font-semibold mb-2 text-zinc-900">OpenCode</h3>
+            <p class="text-sm text-zinc-500">Skills installed to <code class="bg-zinc-100 px-1.5 py-0.5 rounded text-xs font-mono">.opencode/skill/</code></p>
+          </div>
+          <div class="p-5 rounded-lg border border-zinc-200 hover:border-zinc-300 transition-colors">
+            <h3 class="font-semibold mb-2 text-zinc-900">Claude Code</h3>
+            <p class="text-sm text-zinc-500">Use <code class="bg-zinc-100 px-1.5 py-0.5 rounded text-xs font-mono">--claude</code> flag or init in a <code class="bg-zinc-100 px-1.5 py-0.5 rounded text-xs font-mono">.claude/</code> directory</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Requirements -->
+      <div class="mt-10 p-5 rounded-lg bg-zinc-50 border border-zinc-200">
+        <h3 class="font-semibold mb-3 text-zinc-900">Requirements</h3>
+        <ul class="text-sm text-zinc-600 space-y-2">
+          <li class="flex items-center gap-2">
+            <svg class="w-4 h-4 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </svg>
+            <a href="https://bun.sh" class="underline hover:text-zinc-900 transition-colors">Bun</a> runtime
+          </li>
+          <li class="flex items-center gap-2">
+            <svg class="w-4 h-4 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </svg>
+            Node.js 18+ <span class="text-zinc-400">(optional)</span>
+          </li>
+        </ul>
+      </div>
+
+    </div>
+  </main>
+</Layout>

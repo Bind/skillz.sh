@@ -17,7 +17,7 @@ Usage: skz <command> [options]
 Commands:
   init [--claude]         Initialize skillz in current directory
   list                    List available skills from registries
-  add [skills...]         Add skills to your project
+  add [skills...] [-y]    Add skills to your project
   agent [agents...]       Add agents to your project
   migrate                 Migrate legacy config to .opencode/
   upgrade [--yes]         Check for CLI upgrades (--yes to auto-upgrade)
@@ -66,8 +66,10 @@ async function main(): Promise<void> {
       break;
 
     case "add": {
-      const skillNames = args.slice(1);
-      await add(skillNames);
+      const addArgs = args.slice(1);
+      const skipConfirm = addArgs.includes("--yes") || addArgs.includes("-y");
+      const skillNames = addArgs.filter((a) => a !== "--yes" && a !== "-y");
+      await add(skillNames, { yes: skipConfirm });
       break;
     }
 

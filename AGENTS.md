@@ -41,12 +41,51 @@ bun run dev add <skill-name>
 bun run src/cli.ts <command>
 ```
 
-### No Test Suite
+### Testing
 
-This project does not have automated tests. Verify changes by:
+```bash
+cd cli
+
+# Run all tests (unit + E2E)
+bun test
+
+# Type check
+bun run typecheck
+```
+
+Verify changes by:
 1. Running `bun run build` (root)
-2. Running `bun run typecheck` (cli/)
-3. Testing CLI commands in a temp directory
+2. Running `bun test` (cli/)
+3. Running `bun run typecheck` (cli/)
+
+#### E2E Testing
+
+E2E tests are in `cli/src/__tests__/e2e/`. They use a mock HTTP server that serves a test registry.json while using the real source files from `skills/`, `src/`, and `utils/`.
+
+**Structure:**
+```
+cli/src/__tests__/e2e/
+├── fixtures/
+│   └── registry.json   # Test registry (subset of skills)
+├── mock-server.ts      # Bun HTTP server (serves fixtures + real source files)
+├── helpers.ts          # Test utilities (createTestDir, runCli, etc.)
+├── init.test.ts        # Tests for `skz init`
+├── add.test.ts         # Tests for `skz add`
+└── list.test.ts        # Tests for `skz list`
+```
+
+The mock server serves:
+- `/registry.json` from `fixtures/registry.json` (test-specific subset)
+- `/skills/*`, `/src/*`, `/utils/*` from the repo root (real source files)
+
+**Key helpers:**
+- `createTestDir()` - Creates isolated temp directory for test
+- `runCli(args, cwd)` - Runs CLI with `SKZ_TEST_REGISTRY` pointing to mock server
+- `fileExists(path)` - Checks if file exists
+- `readFile(path)` - Reads file content
+
+**Environment variables:**
+- `SKZ_TEST_REGISTRY` - When set, CLI uses this URL instead of production registry
 
 ## Code Style Guidelines
 

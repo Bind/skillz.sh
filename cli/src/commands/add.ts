@@ -20,6 +20,7 @@ import {
   addClaudeSkillPermissions,
 } from "../lib/claude.ts";
 import { runSetupPrompts, writeSkillConfig } from "../lib/prompts.ts";
+import { matchSkills } from "../lib/match.ts";
 import type { SkillSetup } from "../types.ts";
 
 /**
@@ -81,7 +82,11 @@ function resolveSkillDependencies(
   return resolved;
 }
 
-export async function add(skillNames: string[]): Promise<void> {
+export interface AddOptions {
+  yes?: boolean;
+}
+
+export async function add(skillNames: string[], options: AddOptions = {}): Promise<void> {
   const configResult = await findConfig();
 
   if (!configResult) {
@@ -94,9 +99,9 @@ export async function add(skillNames: string[]): Promise<void> {
   const { target } = await detectProjectConfig();
 
   if (target === "claude") {
-    await addClaudeSkills(skillNames, config);
+    await addClaudeSkills(skillNames, config, options);
   } else {
-    await addOpenCodeSkills(skillNames, config, utilsPath, isLegacy);
+    await addOpenCodeSkills(skillNames, config, utilsPath, isLegacy, options);
   }
 }
 
@@ -104,7 +109,8 @@ async function addOpenCodeSkills(
   skillNames: string[],
   config: { registries: string[] },
   utilsPath: string,
-  isLegacy: boolean
+  isLegacy: boolean,
+  options: AddOptions = {}
 ): Promise<void> {
   console.log("\nFetching skills from registries...\n");
 
@@ -167,24 +173,34 @@ async function addOpenCodeSkills(
     }
 
     skillsToInstall = selected;
-  } else if (skillNames.length === 1 && domains.includes(skillNames[0]!)) {
-    // Domain name passed: install all skills in that domain
-    const domainName = skillNames[0]!;
-    skillsToInstall = grouped.get(domainName)!;
-    console.log(`Installing all ${domainName} skills...`);
   } else {
-    // Skill names passed: find each skill
-    for (const name of skillNames) {
-      const skill = allSkills.find((s) => s.name === name);
-      if (!skill) {
-        console.error(`Skill not found: ${name}`);
+    // Match skills by name, domain, or glob pattern
+    for (const pattern of skillNames) {
+      const matched = matchSkills(pattern, allSkills, domains);
+      if (matched.length === 0) {
+        console.error(`No skills found matching: ${pattern}`);
         console.log(
           "Available skills:",
           allSkills.map((s) => s.name).join(", ")
         );
+        console.log("Available domains:", domains.join(", "));
         process.exit(1);
       }
-      skillsToInstall.push(skill);
+      
+      // Log what we're installing for glob/domain patterns
+      if (pattern.includes("*") || domains.includes(pattern)) {
+        console.log(`Pattern '${pattern}' matches ${matched.length} skill(s):`);
+        for (const s of matched) {
+          console.log(`  - ${s.name}`);
+        }
+      }
+      
+      // Add matched skills (avoid duplicates)
+      for (const skill of matched) {
+        if (!skillsToInstall.find((s) => s.name === skill.name)) {
+          skillsToInstall.push(skill);
+        }
+      }
     }
   }
 
@@ -201,7 +217,7 @@ async function addOpenCodeSkills(
     const exists = await skillExists(skill.name);
 
     if (exists) {
-      const overwrite = await confirm({
+      const overwrite = options.yes || await confirm({
         message: `Skill '${skill.name}' already exists. Overwrite?`,
         default: false,
       });
@@ -273,7 +289,8 @@ async function addOpenCodeSkills(
 
 async function addClaudeSkills(
   args: string[],
-  config: { registries: string[] }
+  config: { registries: string[] },
+  options: AddOptions = {}
 ): Promise<void> {
   await ensureClaudeSkillsDir();
 
@@ -342,28 +359,34 @@ async function addClaudeSkills(
     }
 
     skillsToInstall = selected;
-  } else if (args.length === 1 && domains.includes(args[0]!)) {
-    // Domain name passed: install all skills in that domain
-    const domainName = args[0]!;
-    skillsToInstall = grouped.get(domainName)!;
-    console.log(`Installing all ${domainName} skills...`);
   } else {
-    // Skill names passed: find each skill
-    for (const name of args) {
-      const skill = allSkills.find((s) => s.name === name);
-      if (!skill) {
-        console.error(`Skill not found: ${name}`);
+    // Match skills by name, domain, or glob pattern
+    for (const pattern of args) {
+      const matched = matchSkills(pattern, allSkills, domains);
+      if (matched.length === 0) {
+        console.error(`No skills found matching: ${pattern}`);
         console.log(
           "Available skills:",
           allSkills.map((s) => s.name).join(", ")
         );
-        console.log(
-          "Available domains:",
-          domains.join(", ")
-        );
+        console.log("Available domains:", domains.join(", "));
         process.exit(1);
       }
-      skillsToInstall.push(skill);
+      
+      // Log what we're installing for glob/domain patterns
+      if (pattern.includes("*") || domains.includes(pattern)) {
+        console.log(`Pattern '${pattern}' matches ${matched.length} skill(s):`);
+        for (const s of matched) {
+          console.log(`  - ${s.name}`);
+        }
+      }
+      
+      // Add matched skills (avoid duplicates)
+      for (const skill of matched) {
+        if (!skillsToInstall.find((s) => s.name === skill.name)) {
+          skillsToInstall.push(skill);
+        }
+      }
     }
   }
 
@@ -382,7 +405,7 @@ async function addClaudeSkills(
     const exists = await claudeSkillExists(skill.name);
 
     if (exists) {
-      const overwrite = await confirm({
+      const overwrite = options.yes || await confirm({
         message: `Skill '${skill.name}' already exists. Overwrite?`,
         default: false,
       });

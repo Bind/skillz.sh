@@ -12,6 +12,7 @@
   ],
   "scripts": {
     "dev": "bun run ./src/cli.ts",
+    "test": "bun test",
     "typecheck": "tsc --noEmit"
   },
   "keywords": [

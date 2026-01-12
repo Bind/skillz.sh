@@ -28,6 +28,18 @@ export interface ConfigResult {
 }
 
 /**
+ * Override registries with test registry if SKZ_TEST_REGISTRY env var is set.
+ * Used for E2E testing with mock server.
+ */
+function applyTestRegistryOverride(config: SkzConfig): SkzConfig {
+  const testRegistry = process.env.SKZ_TEST_REGISTRY;
+  if (testRegistry) {
+    return { ...config, registries: [testRegistry] };
+  }
+  return config;
+}
+
+/**
  * Find and read config from known locations.
  * Checks in order: .opencode/skz.json, .claude/skz.json, ./skz.json (legacy)
  */
@@ -42,7 +54,8 @@ export async function findConfig(): Promise<ConfigResult | null> {
     const file = Bun.file(loc.path);
     if (await file.exists()) {
       try {
-        const config = (await file.json()) as SkzConfig;
+        const rawConfig = (await file.json()) as SkzConfig;
+        const config = applyTestRegistryOverride(rawConfig);
         const configDir = dirname(loc.path);
         const utilsPath = resolve(configDir, config.utils);
 

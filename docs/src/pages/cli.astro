@@ -1,0 +1,198 @@
+---
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout title="CLI" activePage="cli">
+  <main class="flex-1 py-12 px-8">
+    <div class="max-w-3xl mx-auto">
+      <h1 class="text-3xl font-bold mb-2 tracking-tight text-zinc-900">CLI</h1>
+      <p class="text-lg text-zinc-500 mb-10">
+        Use the skz CLI to add skills and agents to your project.
+      </p>
+
+      <!-- init -->
+      <section class="mb-12">
+        <h2 class="text-xl font-semibold mb-4 text-zinc-900">init</h2>
+        <p class="text-zinc-600 mb-4">
+          Use the <code class="bg-zinc-100 px-1.5 py-0.5 rounded text-sm font-mono">init</code> command to initialize configuration for a new project.
+        </p>
+        <p class="text-zinc-600 mb-4">
+          The <code class="bg-zinc-100 px-1.5 py-0.5 rounded text-sm font-mono">init</code> command creates the config file and sets up the required directories.
+        </p>
+        <div class="relative group mb-4">
+          <pre class="bg-zinc-950 text-zinc-50 rounded-lg p-4 pr-12 overflow-x-auto"><code class="text-sm font-mono">bunx @bind/skillz init</code></pre>
+          <button
+            onclick="navigator.clipboard.writeText('bunx @bind/skillz init')"
+            class="absolute top-3 right-3 p-2 rounded-md text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 transition-colors opacity-0 group-hover:opacity-100"
+            title="Copy to clipboard"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+            </svg>
+          </button>
+        </div>
+        <div class="mt-6">
+          <h4 class="text-sm font-semibold text-zinc-700 mb-3">Options</h4>
+          <div class="bg-zinc-50 rounded-lg p-4 font-mono text-sm text-zinc-700 overflow-x-auto">
+            <pre>Usage: skz init [options]
+
+Initialize skillz in current directory
+
+Options:
+  --claude    Force Claude mode (creates .claude/skills/)</pre>
+          </div>
+        </div>
+      </section>
+
+      <hr class="border-zinc-200 my-8" />
+
+      <!-- add -->
+      <section class="mb-12">
+        <h2 class="text-xl font-semibold mb-4 text-zinc-900">add</h2>
+        <p class="text-zinc-600 mb-4">
+          Use the <code class="bg-zinc-100 px-1.5 py-0.5 rounded text-sm font-mono">add</code> command to add skills to your project.
+        </p>
+        <div class="relative group mb-4">
+          <pre class="bg-zinc-950 text-zinc-50 rounded-lg p-4 pr-12 overflow-x-auto"><code class="text-sm font-mono">bunx @bind/skillz add [skill]</code></pre>
+          <button
+            onclick="navigator.clipboard.writeText('bunx @bind/skillz add [skill]')"
+            class="absolute top-3 right-3 p-2 rounded-md text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 transition-colors opacity-0 group-hover:opacity-100"
+            title="Copy to clipboard"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+            </svg>
+          </button>
+        </div>
+        <p class="text-zinc-500 text-sm mb-4">
+          Run without arguments to open an interactive picker.
+        </p>
+        <div class="mt-6">
+          <h4 class="text-sm font-semibold text-zinc-700 mb-3">Options</h4>
+          <div class="bg-zinc-50 rounded-lg p-4 font-mono text-sm text-zinc-700 overflow-x-auto">
+            <pre>Usage: skz add [skills...]
+
+Add skills to your project
+
+Arguments:
+  skills    Skill name(s), domain, or glob pattern
+
+Examples:
+  skz add                      # Interactive picker
+  skz add linear-issues-read   # Add specific skill
+  skz add linear               # Add all skills in domain
+  skz add linear-*-read        # Add skills matching pattern
+  skz add linear-* github-*    # Multiple patterns</pre>
+          </div>
+        </div>
+      </section>
+
+      <hr class="border-zinc-200 my-8" />
+
+      <!-- agent -->
+      <section class="mb-12">
+        <h2 class="text-xl font-semibold mb-4 text-zinc-900">agent</h2>
+        <p class="text-zinc-600 mb-4">
+          Use the <code class="bg-zinc-100 px-1.5 py-0.5 rounded text-sm font-mono">agent</code> command to add agents to your project.
+        </p>
+        <div class="relative group mb-4">
+          <pre class="bg-zinc-950 text-zinc-50 rounded-lg p-4 pr-12 overflow-x-auto"><code class="text-sm font-mono">bunx @bind/skillz agent [agent]</code></pre>
+          <button
+            onclick="navigator.clipboard.writeText('bunx @bind/skillz agent [agent]')"
+            class="absolute top-3 right-3 p-2 rounded-md text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 transition-colors opacity-0 group-hover:opacity-100"
+            title="Copy to clipboard"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+            </svg>
+          </button>
+        </div>
+        <p class="text-zinc-500 text-sm mb-4">
+          Run without arguments to open an interactive picker.
+        </p>
+        <div class="mt-6">
+          <h4 class="text-sm font-semibold text-zinc-700 mb-3">Options</h4>
+          <div class="bg-zinc-50 rounded-lg p-4 font-mono text-sm text-zinc-700 overflow-x-auto">
+            <pre>Usage: skz agent [agents...]
+
+Add agents to your project
+
+Arguments:
+  agents    Agent name(s) to add
+
+Examples:
+  skz agent              # Interactive picker
+  skz agent librarian    # Add specific agent</pre>
+          </div>
+        </div>
+      </section>
+
+      <hr class="border-zinc-200 my-8" />
+
+      <!-- list -->
+      <section class="mb-12">
+        <h2 class="text-xl font-semibold mb-4 text-zinc-900">list</h2>
+        <p class="text-zinc-600 mb-4">
+          Use the <code class="bg-zinc-100 px-1.5 py-0.5 rounded text-sm font-mono">list</code> command to list available skills from registries.
+        </p>
+        <div class="relative group mb-4">
+          <pre class="bg-zinc-950 text-zinc-50 rounded-lg p-4 pr-12 overflow-x-auto"><code class="text-sm font-mono">bunx @bind/skillz list</code></pre>
+          <button
+            onclick="navigator.clipboard.writeText('bunx @bind/skillz list')"
+            class="absolute top-3 right-3 p-2 rounded-md text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 transition-colors opacity-0 group-hover:opacity-100"
+            title="Copy to clipboard"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+            </svg>
+          </button>
+        </div>
+        <div class="mt-6">
+          <h4 class="text-sm font-semibold text-zinc-700 mb-3">Options</h4>
+          <div class="bg-zinc-50 rounded-lg p-4 font-mono text-sm text-zinc-700 overflow-x-auto">
+            <pre>Usage: skz list [options]
+
+List available skills from registries
+
+Options:
+  --agents    List available agents instead of skills</pre>
+          </div>
+        </div>
+      </section>
+
+      <hr class="border-zinc-200 my-8" />
+
+      <!-- upgrade -->
+      <section class="mb-12">
+        <h2 class="text-xl font-semibold mb-4 text-zinc-900">upgrade</h2>
+        <p class="text-zinc-600 mb-4">
+          Use the <code class="bg-zinc-100 px-1.5 py-0.5 rounded text-sm font-mono">upgrade</code> command to check for and install CLI updates.
+        </p>
+        <div class="relative group mb-4">
+          <pre class="bg-zinc-950 text-zinc-50 rounded-lg p-4 pr-12 overflow-x-auto"><code class="text-sm font-mono">bunx @bind/skillz upgrade</code></pre>
+          <button
+            onclick="navigator.clipboard.writeText('bunx @bind/skillz upgrade')"
+            class="absolute top-3 right-3 p-2 rounded-md text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 transition-colors opacity-0 group-hover:opacity-100"
+            title="Copy to clipboard"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+            </svg>
+          </button>
+        </div>
+        <div class="mt-6">
+          <h4 class="text-sm font-semibold text-zinc-700 mb-3">Options</h4>
+          <div class="bg-zinc-50 rounded-lg p-4 font-mono text-sm text-zinc-700 overflow-x-auto">
+            <pre>Usage: skz upgrade [options]
+
+Check for CLI upgrades
+
+Options:
+  --yes, -y    Auto-upgrade without confirmation</pre>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+</Layout>

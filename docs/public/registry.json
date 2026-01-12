@@ -1,0 +1,371 @@
+{
+  "name": "skillz.sh",
+  "version": "2.0.0",
+  "basePath": "registry",
+  "skills": [
+    {
+      "name": "ask-questions-if-underspecified",
+      "description": "Clarify requirements before implementing. Do not use automatically, only when invoked explicitly.",
+      "version": "1.0.0",
+      "files": {
+        "skill": [
+          "SKILL.md"
+        ]
+      }
+    },
+    {
+      "name": "linear-milestones-read",
+      "description": "List Linear project milestones via CLI (read-only operations)",
+      "version": "1.0.0",
+      "files": {
+        "skill": [
+          "SKILL.md",
+          "skill.json"
+        ],
+        "entry": {
+          "list-milestones": "src/linear/list-milestones.ts"
+        }
+      },
+      "domain": "linear",
+      "utils": [
+        "utils",
+        "linear"
+      ],
+      "dependencies": {
+        "@linear/sdk": "^29.0.0"
+      },
+      "setup": {
+        "env": [
+          "LINEAR_API_KEY"
+        ],
+        "instructions": "Get your API key from Linear Settings > API > Personal API keys"
+      }
+    },
+    {
+      "name": "github-pr",
+      "description": "GitHub PR utilities for code review workflows",
+      "version": "0.1.0-beta",
+      "files": {
+        "skill": [
+          "SKILL.md",
+          "skill.json"
+        ],
+        "entry": {
+          "check-review-needed": "src/github/check-review-needed.ts",
+          "list-guideline-files": "src/github/list-guideline-files.ts",
+          "post-inline-comment": "src/github/post-inline-comment.ts"
+        }
+      },
+      "domain": "github",
+      "utils": [
+        "utils",
+        "github"
+      ],
+      "setup": {
+        "env": [],
+        "instructions": "Requires GitHub CLI (gh). Install: brew install gh && gh auth login"
+      }
+    },
+    {
+      "name": "linear-issues-read",
+      "description": "List and get Linear issues via CLI (read-only operations)",
+      "version": "1.0.0",
+      "files": {
+        "skill": [
+          "SKILL.md",
+          "skill.json"
+        ],
+        "entry": {
+          "list-issues": "src/linear/list-issues.ts",
+          "get-issue": "src/linear/get-issue.ts"
+        }
+      },
+      "domain": "linear",
+      "utils": [
+        "utils",
+        "linear"
+      ],
+      "dependencies": {
+        "@linear/sdk": "^29.0.0"
+      },
+      "setup": {
+        "env": [
+          "LINEAR_API_KEY"
+        ],
+        "instructions": "Get your API key from Linear Settings > API > Personal API keys"
+      }
+    },
+    {
+      "name": "context-tree",
+      "description": "Generate a project tree annotated with context.md notes to help future sessions, (auto-call at session start)",
+      "version": "1.0.0",
+      "files": {
+        "skill": [
+          "SKILL.md",
+          "skill.json"
+        ],
+        "entry": {
+          "tree": "src/context-tree/tree.ts"
+        }
+      },
+      "domain": "docs",
+      "utils": [
+        "utils"
+      ]
+    },
+    {
+      "name": "playwright-browser",
+      "description": "Control a Playwright browser via CLI - navigate, interact, and screenshot",
+      "version": "1.0.0",
+      "files": {
+        "skill": [
+          "SKILL.md",
+          "skill.json"
+        ],
+        "entry": {
+          "session": "src/playwright/session.ts",
+          "navigate": "src/playwright/navigate.ts",
+          "snapshot": "src/playwright/snapshot.ts",
+          "type": "src/playwright/type.ts",
+          "click": "src/playwright/click.ts",
+          "screenshot": "src/playwright/screenshot.ts"
+        }
+      },
+      "domain": "browser",
+      "utils": [
+        "utils",
+        "playwright"
+      ],
+      "dependencies": {
+        "playwright": "^1.49.0"
+      }
+    },
+    {
+      "name": "compound-docs",
+      "description": "Capture solved problems as searchable documentation with pattern detection. This skill auto-triggers when users confirm a fix worked (\"that worked\", \"it's fixed\", \"working now\") or manually via /compound command.",
+      "version": "0.1.0-beta",
+      "files": {
+        "skill": [
+          "SKILL.md",
+          "skill.json"
+        ]
+      },
+      "domain": "docs",
+      "setup": {
+        "prompts": [
+          {
+            "name": "output_dir",
+            "type": "input",
+            "message": "Where should solution docs be saved?",
+            "default": "docs/solutions"
+          }
+        ],
+        "configFile": ".opencode/compound-docs.yaml"
+      }
+    },
+    {
+      "name": "linear-issues-write",
+      "description": "Create and update Linear issues via CLI (write operations)",
+      "version": "1.0.0",
+      "files": {
+        "skill": [
+          "SKILL.md",
+          "skill.json"
+        ],
+        "entry": {
+          "create-issue": "src/linear/create-issue.ts",
+          "update-issue": "src/linear/update-issue.ts"
+        }
+      },
+      "domain": "linear",
+      "utils": [
+        "utils",
+        "linear"
+      ],
+      "dependencies": {
+        "@linear/sdk": "^29.0.0"
+      },
+      "setup": {
+        "env": [
+          "LINEAR_API_KEY"
+        ],
+        "instructions": "Get your API key from Linear Settings > API > Personal API keys"
+      }
+    },
+    {
+      "name": "code-review",
+      "description": "Automated PR code review with multi-agent analysis",
+      "version": "0.1.0-beta",
+      "files": {
+        "skill": [
+          "SKILL.md",
+          "skill.json"
+        ]
+      },
+      "domain": "github",
+      "requires": [
+        "github-pr"
+      ],
+      "setup": {
+        "env": [],
+        "instructions": "Requires GitHub CLI (gh). Install: brew install gh && gh auth login"
+      }
+    },
+    {
+      "name": "psql",
+      "description": "Run PostgreSQL queries and meta-commands via CLI",
+      "version": "1.0.0",
+      "files": {
+        "skill": [
+          "SKILL.md",
+          "skill.json"
+        ],
+        "entry": {
+          "query": "src/psql/query.ts"
+        }
+      },
+      "domain": "database",
+      "utils": [
+        "utils"
+      ]
+    },
+    {
+      "name": "linear-projects-read",
+      "description": "List and get Linear projects via CLI (read-only operations)",
+      "version": "1.0.0",
+      "files": {
+        "skill": [
+          "SKILL.md",
+          "skill.json"
+        ],
+        "entry": {
+          "list-projects": "src/linear/list-projects.ts",
+          "get-project": "src/linear/get-project.ts"
+        }
+      },
+      "domain": "linear",
+      "utils": [
+        "utils",
+        "linear"
+      ],
+      "dependencies": {
+        "@linear/sdk": "^29.0.0"
+      },
+      "setup": {
+        "env": [
+          "LINEAR_API_KEY"
+        ],
+        "instructions": "Get your API key from Linear Settings > API > Personal API keys"
+      }
+    },
+    {
+      "name": "linear-projects-write",
+      "description": "Create and update Linear projects via CLI (write operations)",
+      "version": "1.0.0",
+      "files": {
+        "skill": [
+          "SKILL.md",
+          "skill.json"
+        ],
+        "entry": {
+          "create-project": "src/linear/create-project.ts",
+          "update-project": "src/linear/update-project.ts"
+        }
+      },
+      "domain": "linear",
+      "utils": [
+        "utils",
+        "linear"
+      ],
+      "dependencies": {
+        "@linear/sdk": "^29.0.0"
+      },
+      "setup": {
+        "env": [
+          "LINEAR_API_KEY"
+        ],
+        "instructions": "Get your API key from Linear Settings > API > Personal API keys"
+      }
+    },
+    {
+      "name": "tmux",
+      "description": "Manage tmux sessions for interactive background processes",
+      "version": "1.0.0",
+      "files": {
+        "skill": [
+          "SKILL.md",
+          "skill.json"
+        ],
+        "entry": {
+          "list-sessions": "src/tmux/list-sessions.ts",
+          "create-session": "src/tmux/create-session.ts",
+          "send-command": "src/tmux/send-command.ts",
+          "capture-output": "src/tmux/capture-output.ts",
+          "kill-session": "src/tmux/kill-session.ts"
+        }
+      },
+      "domain": "terminal",
+      "utils": [
+        "utils",
+        "tmux"
+      ]
+    },
+    {
+      "name": "linear-milestones-write",
+      "description": "Create and update Linear project milestones via CLI (write operations)",
+      "version": "1.0.0",
+      "files": {
+        "skill": [
+          "SKILL.md",
+          "skill.json"
+        ],
+        "entry": {
+          "create-milestone": "src/linear/create-milestone.ts",
+          "update-milestone": "src/linear/update-milestone.ts"
+        }
+      },
+      "domain": "linear",
+      "utils": [
+        "utils",
+        "linear"
+      ],
+      "dependencies": {
+        "@linear/sdk": "^29.0.0"
+      },
+      "setup": {
+        "env": [
+          "LINEAR_API_KEY"
+        ],
+        "instructions": "Get your API key from Linear Settings > API > Personal API keys"
+      }
+    }
+  ],
+  "agents": [
+    {
+      "name": "librarian",
+      "description": "Fetches up-to-date documentation for libraries and APIs using Context7 and GitHub code search",
+      "version": "1.0.0",
+      "files": [
+        "agent.md",
+        "agent.json"
+      ],
+      "mcp": {
+        "context7": {
+          "type": "remote",
+          "url": "https://mcp.context7.com/mcp"
+        },
+        "grep_app": {
+          "type": "remote",
+          "url": "https://mcp.grep.app"
+        }
+      }
+    }
+  ],
+  "utils": [
+    "github.ts",
+    "utils.ts",
+    "tmux.ts",
+    "linear.ts",
+    "playwright.ts"
+  ]
+}
