@@ -41,6 +41,21 @@ bun run dev add <skill-name>
 bun run src/cli.ts <command>
 ```
 
+### Docs (`docs/`)
+
+```bash
+cd docs
+
+# Start dev server
+bun run dev
+
+# Build for production
+bun run build
+
+# Preview production build
+bun run preview
+```
+
 ### Testing
 
 ```bash

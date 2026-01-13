@@ -1,5 +1,8 @@
 ---
 import Layout from '../../layouts/Layout.astro';
+import PageContainer from '../../components/PageContainer.astro';
+import InstallCommand from '../../components/InstallCommand.astro';
+import Card from '../../components/Card.astro';
 import type { RegistryAgent } from '../../types/registry';
 import registryData from '../../data/registry.json';
 
@@ -17,50 +20,26 @@ const installCmd = `bunx skz agent ${agent.name}`;
 ---
 
 <Layout title={agent.name} activePage="agents">
-  <main class="flex-1 py-8 px-8">
-    <div class="max-w-3xl mx-auto">
+  <PageContainer>
     <div class="mb-10">
-      <h1 class="text-5xl font-bold tracking-tight mb-4 text-zinc-900">{agent.name}</h1>
-      <p class="text-xl text-zinc-600 max-w-2xl leading-relaxed">{agent.description}</p>
+      <h1 class="text-5xl font-bold tracking-tight mb-4 text-gray-900">{agent.name}</h1>
+      <p class="text-xl text-gray-600 max-w-2xl leading-relaxed">{agent.description}</p>
     </div>
 
-    <div class="mb-10">
-      <div class="flex items-center gap-2 text-sm font-medium text-zinc-600 mb-3">
-            <svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
-            </svg>
-            <span>Install agent</span>
-          </div>
-          <div class="group relative">
-            <div class="absolute -inset-0.5 bg-gradient-to-r from-purple-500 to-purple-400 rounded-lg opacity-20 group-hover:opacity-40 transition-opacity duration-300"></div>
-            <div class="relative flex items-center justify-between gap-4 p-4 rounded-lg border border-zinc-200 bg-white backdrop-blur">
-              <code class="text-base text-zinc-800 font-mono">{installCmd}</code>
-              <button
-                onclick={`navigator.clipboard.writeText('${installCmd}')`}
-                class="flex items-center gap-2 px-4 py-2 rounded-md bg-purple-600 hover:bg-purple-500 text-white text-sm font-medium transition-all active:scale-95"
-              >
-                <svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
-                </svg>
-                <span>Copy</span>
-              </button>
-        </div>
-      </div>
-    </div>
+    <InstallCommand command={installCmd} label="Install agent" class="mb-10" />
 
     {agent.mcp && Object.keys(agent.mcp).length > 0 && (
-      <div class="mb-10 p-4 rounded-lg border border-zinc-200 bg-zinc-50">
-        <h3 class="text-sm font-medium text-zinc-600 mb-2">MCP Servers</h3>
-        <ul class="text-sm text-zinc-600 space-y-1">
+      <Card variant="muted" class="mb-10">
+        <h3 class="text-sm font-medium text-gray-600 mb-2">MCP Servers</h3>
+        <ul class="text-sm text-gray-600 space-y-1">
           {Object.entries(agent.mcp).map(([name, config]) => (
             <li>
-              <span class="font-mono text-purple-600">{name}</span>
-              {config.url && <span class="text-zinc-500 ml-2">(remote: {config.url})</span>}
+              <span class="font-mono text-gray-700">{name}</span>
+              {config.url && <span class="text-gray-500 ml-2">(remote: {config.url})</span>}
             </li>
           ))}
         </ul>
-      </div>
+      </Card>
     )}
-    </div>
-  </main>
+  </PageContainer>
 </Layout>

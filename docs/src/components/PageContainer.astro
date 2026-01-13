@@ -1,0 +1,20 @@
+---
+interface Props {
+  size?: "sm" | "md" | "lg";
+  class?: string;
+}
+
+const { size = "md", class: className } = Astro.props;
+
+const maxWidths = {
+  sm: "max-w-2xl",
+  md: "max-w-3xl",
+  lg: "max-w-4xl",
+};
+---
+
+<main class:list={["flex-1 py-8 px-8", className]}>
+  <div class:list={[maxWidths[size], "mx-auto"]}>
+    <slot />
+  </div>
+</main>

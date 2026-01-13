@@ -23,11 +23,16 @@ const navItems = [
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{title} - skillz.sh</title>
     <meta name="description" content="Skills for AI coding agents" />
+    {import.meta.env.DEV && (
+      <script>
+        import("react-grab");
+      </script>
+    )}
   </head>
   <body class="min-h-screen flex flex-col bg-white">
-    <header class="sticky top-0 z-50 w-full border-b border-zinc-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60">
+    <header class="sticky top-0 z-50 w-full border-b border-gray-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60">
       <div class="flex h-14 items-center px-6">
-        <a href="/" class="font-mono font-bold text-lg tracking-tight hover:text-zinc-600 mr-8">
+        <a href="/" class="font-mono font-bold text-lg tracking-tight hover:text-gray-600 mr-8">
           SKZ
         </a>
         <nav class="flex items-center gap-6 text-sm">
@@ -36,7 +41,7 @@ const navItems = [
               href={item.href}
               class:list={[
                 "transition-colors font-medium",
-                activePage === item.id ? "text-zinc-900" : "text-zinc-500 hover:text-zinc-900",
+                activePage === item.id ? "text-gray-900" : "text-gray-500 hover:text-gray-900",
               ]}
             >
               {item.label}

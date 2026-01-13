@@ -1,0 +1,17 @@
+---
+interface Props {
+  muted?: boolean;
+  small?: boolean;
+  class?: string;
+}
+
+const { muted = false, small = false, class: className } = Astro.props;
+---
+
+<p class:list={[
+  muted ? "text-gray-500" : "text-gray-600",
+  small ? "text-sm" : "",
+  className
+]}>
+  <slot />
+</p>

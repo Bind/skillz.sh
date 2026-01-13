@@ -1,0 +1,18 @@
+---
+interface Props {
+  code: string;
+  copyable?: boolean;
+  class?: string;
+}
+
+const { code, copyable = true, class: className } = Astro.props;
+---
+
+<pre 
+  onclick={copyable ? `navigator.clipboard.writeText('${code.replace(/'/g, "\\'")}')` : undefined}
+  class:list={[
+    "bg-gray-50 text-gray-700 border border-gray-300 rounded-lg p-4 overflow-x-auto",
+    copyable && "cursor-pointer hover:bg-gray-100 transition-colors",
+    className
+  ]}
+><code class="text-sm font-mono">{code}</code></pre>

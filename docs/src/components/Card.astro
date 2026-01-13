@@ -1,0 +1,23 @@
+---
+interface Props {
+  variant?: "default" | "muted";
+  hoverable?: boolean;
+  class?: string;
+}
+
+const { variant = "default", hoverable = false, class: className } = Astro.props;
+
+const variants = {
+  default: "border border-gray-200 bg-white",
+  muted: "border border-gray-200 bg-gray-50",
+};
+---
+
+<div class:list={[
+  "p-4 rounded-xl",
+  variants[variant],
+  hoverable && "hover:border-gray-400 transition-colors",
+  className
+]}>
+  <slot />
+</div>

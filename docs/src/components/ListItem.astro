@@ -1,0 +1,19 @@
+---
+interface Props {
+  href?: string;
+  class?: string;
+}
+
+const { href, class: className } = Astro.props;
+const Tag = href ? "a" : "div";
+---
+
+<Tag
+  href={href}
+  class:list={[
+    "group block py-2 hover:bg-gray-50 -mx-3 px-3 rounded-md transition-colors",
+    className
+  ]}
+>
+  <slot />
+</Tag>

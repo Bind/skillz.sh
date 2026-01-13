@@ -1,0 +1,33 @@
+---
+import SectionTitle from "./SectionTitle.astro";
+import CodeBlockWithCopy from "./CodeBlockWithCopy.astro";
+import SubsectionTitle from "./SubsectionTitle.astro";
+
+interface Props {
+  name: string;
+  command: string;
+  options?: string;
+  class?: string;
+}
+
+const { name, command, options, class: className } = Astro.props;
+---
+
+<section class:list={["mb-12", className]}>
+  <SectionTitle>{name}</SectionTitle>
+  
+  <slot name="description" />
+  
+  <CodeBlockWithCopy code={command} class="mb-4" />
+  
+  <slot name="hint" />
+  
+  {options && (
+    <div class="mt-6">
+      <SubsectionTitle>Options</SubsectionTitle>
+      <div class="bg-gray-50 rounded-lg p-4 font-mono text-sm text-gray-700 overflow-x-auto">
+        <pre>{options}</pre>
+      </div>
+    </div>
+  )}
+</section>
