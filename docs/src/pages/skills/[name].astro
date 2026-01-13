@@ -3,7 +3,7 @@ import Layout from '../../layouts/Layout.astro';
 import PageContainer from '../../components/PageContainer.astro';
 import Badge from '../../components/Badge.astro';
 import Card from '../../components/Card.astro';
-import CodeBlock from '../../components/CodeBlock.astro';
+import { CodeBlock } from '../../components/CodeBlock';
 import type { RegistrySkill } from '../../types/registry';
 import registryData from '../../data/registry.json';
 
@@ -32,7 +32,7 @@ const installCmd = `bunx skz add ${skill.name}`;
     </div>
 
     <div class="mb-8">
-      <CodeBlock code={installCmd} />
+      <CodeBlock code={installCmd} client:load />
     </div>
 
     {skill.setup?.instructions && (

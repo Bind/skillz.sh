@@ -1,5 +1,5 @@
 ---
-import Icon from "./Icon.astro";
+import { Icon } from "./Icon";
 
 interface Props {
   href: string;
@@ -38,7 +38,7 @@ const { href, name, version, description, tags, class: className } = Astro.props
       )}
     </div>
     <span class="inline-flex flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
-      <Icon name="chevron-right" size="sm" class="text-gray-400" />
+      <Icon name="chevron-right" size="sm" className="text-gray-400" />
     </span>
   </div>
 </a>

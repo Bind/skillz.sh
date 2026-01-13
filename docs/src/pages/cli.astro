@@ -3,15 +3,16 @@ import Layout from "../layouts/Layout.astro";
 import PageTitle from "../components/PageTitle.astro";
 import PageDescription from "../components/PageDescription.astro";
 import PageContainer from "../components/PageContainer.astro";
-import CommandSection from "../components/CommandSection.astro";
+import SectionTitle from "../components/SectionTitle.astro";
+import SubsectionTitle from "../components/SubsectionTitle.astro";
 import Paragraph from "../components/Paragraph.astro";
-import InlineCode from "../components/InlineCode.astro";
+import { CodeBlock } from "../components/CodeBlock";
 
 const commands = [
   {
     name: "init",
     command: "bunx @bind/skillz init",
-    description: "Use the <code>init</code> command to initialize configuration for a new project. The <code>init</code> command creates the config file and sets up the required directories.",
+    description: "Use the init command to initialize configuration for a new project. The init command creates the config file and sets up the required directories.",
     options: `Usage: skz init [options]
 
 Initialize skillz in current directory
@@ -22,7 +23,7 @@ Options:
   {
     name: "add",
     command: "bunx @bind/skillz add [skill]",
-    description: "Use the <code>add</code> command to add skills to your project.",
+    description: "Use the add command to add skills to your project.",
     hint: "Run without arguments to open an interactive picker.",
     options: `Usage: skz add [skills...]
 
@@ -41,7 +42,7 @@ Examples:
   {
     name: "agent",
     command: "bunx @bind/skillz agent [agent]",
-    description: "Use the <code>agent</code> command to add agents to your project.",
+    description: "Use the agent command to add agents to your project.",
     hint: "Run without arguments to open an interactive picker.",
     options: `Usage: skz agent [agents...]
 
@@ -57,7 +58,7 @@ Examples:
   {
     name: "list",
     command: "bunx @bind/skillz list",
-    description: "Use the <code>list</code> command to list available skills from registries.",
+    description: "Use the list command to list available skills from registries.",
     options: `Usage: skz list [options]
 
 List available skills from registries
@@ -68,7 +69,7 @@ Options:
   {
     name: "upgrade",
     command: "bunx @bind/skillz upgrade",
-    description: "Use the <code>upgrade</code> command to check for and install CLI updates.",
+    description: "Use the upgrade command to check for and install CLI updates.",
     options: `Usage: skz upgrade [options]
 
 Check for CLI upgrades
@@ -89,12 +90,20 @@ Options:
     {commands.map((cmd, index) => (
       <>
         {index > 0 && <hr class="border-gray-200 my-8" />}
-        <CommandSection name={cmd.name} command={cmd.command} options={cmd.options}>
-          <Paragraph class="mb-4" slot="description" set:html={cmd.description} />
-          {cmd.hint && (
-            <Paragraph muted small class="mb-4" slot="hint">{cmd.hint}</Paragraph>
+        <section class="mb-12">
+          <SectionTitle>{cmd.name}</SectionTitle>
+          <Paragraph class="mb-4">{cmd.description}</Paragraph>
+          <CodeBlock code={cmd.command} copyMode="hover" client:load />
+          {cmd.hint && <Paragraph muted small class="mt-4">{cmd.hint}</Paragraph>}
+          {cmd.options && (
+            <div class="mt-6">
+              <SubsectionTitle>Options</SubsectionTitle>
+              <div class="bg-gray-50 rounded-lg p-4 font-mono text-sm text-gray-700 overflow-x-auto">
+                <pre>{cmd.options}</pre>
+              </div>
+            </div>
           )}
-        </CommandSection>
+        </section>
       </>
     ))}
   </PageContainer>

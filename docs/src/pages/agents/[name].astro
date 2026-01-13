@@ -1,8 +1,8 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 import PageContainer from '../../components/PageContainer.astro';
-import InstallCommand from '../../components/InstallCommand.astro';
 import Card from '../../components/Card.astro';
+import { InstallCommand } from '../../components/InstallCommand';
 import type { RegistryAgent } from '../../types/registry';
 import registryData from '../../data/registry.json';
 
@@ -26,7 +26,7 @@ const installCmd = `bunx skz agent ${agent.name}`;
       <p class="text-xl text-gray-600 max-w-2xl leading-relaxed">{agent.description}</p>
     </div>
 
-    <InstallCommand command={installCmd} label="Install agent" class="mb-10" />
+    <InstallCommand command={installCmd} label="Install agent" className="mb-10" client:load />
 
     {agent.mcp && Object.keys(agent.mcp).length > 0 && (
       <Card variant="muted" class="mb-10">

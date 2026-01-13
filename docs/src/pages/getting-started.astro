@@ -5,9 +5,10 @@ import PageDescription from "../components/PageDescription.astro";
 import SectionTitle from "../components/SectionTitle.astro";
 import Paragraph from "../components/Paragraph.astro";
 import InlineCode from "../components/InlineCode.astro";
-import CodeBlock from "../components/CodeBlock.astro";
 import Card from "../components/Card.astro";
 import StepNumber from "../components/StepNumber.astro";
+import { Icon } from "../components/Icon";
+import { CodeBlock } from "../components/CodeBlock";
 ---
 
 <Layout title="Getting Started" activePage="getting-started">
@@ -28,7 +29,7 @@ import StepNumber from "../components/StepNumber.astro";
           Run the <InlineCode>init</InlineCode> command to set up skz in your project:
         </Paragraph>
         <div class="ml-10">
-          <CodeBlock code="bunx @bind/skillz init" />
+          <CodeBlock code="bunx @bind/skillz init" client:load />
         </div>
         <Paragraph muted small class="mt-3 ml-10">
           This creates a <InlineCode size="xs">.opencode/skz.json</InlineCode> config file.
@@ -45,7 +46,7 @@ import StepNumber from "../components/StepNumber.astro";
           Add skills to your project using the <InlineCode>add</InlineCode> command:
         </Paragraph>
         <div class="ml-10">
-          <CodeBlock code="bunx @bind/skillz add linear-issues-read" />
+          <CodeBlock code="bunx @bind/skillz add linear-issues-read" client:load />
         </div>
         <Paragraph muted small class="mt-3 ml-10">
           Or run <InlineCode size="xs">bunx @bind/skillz add</InlineCode> without arguments for an interactive picker.
@@ -72,15 +73,11 @@ import StepNumber from "../components/StepNumber.astro";
         <h3 class="font-semibold mb-3 text-gray-900">Requirements</h3>
         <ul class="text-sm text-gray-600 space-y-2">
           <li class="flex items-center gap-2">
-            <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-            </svg>
+            <Icon name="check" size="sm" className="text-gray-500" client:load />
             <a href="https://bun.sh" class="underline hover:text-gray-900 transition-colors">Bun</a> runtime
           </li>
           <li class="flex items-center gap-2">
-            <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-            </svg>
+            <Icon name="check" size="sm" className="text-gray-500" client:load />
             Node.js 18+ <span class="text-gray-400">(optional)</span>
           </li>
         </ul>
