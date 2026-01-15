@@ -3,7 +3,7 @@ name: Purge Cloudflare Cache
 on:
   # Trigger after GitHub Pages deployment completes
   workflow_run:
-    workflows: ["pages-build-deployment"]
+    workflows: ["Deploy Docs to GitHub Pages"]
     types:
       - completed
   workflow_dispatch:
