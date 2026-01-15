@@ -1,63 +1,145 @@
 ---
+import { readFile } from "node:fs/promises";
+import { join } from "node:path";
 import Layout from '../../layouts/Layout.astro';
 import PageContainer from '../../components/PageContainer.astro';
 import Badge from '../../components/Badge.astro';
-import Card from '../../components/Card.astro';
+import SectionTitle from '../../components/SectionTitle.astro';
 import { CodeBlock } from '../../components/CodeBlock';
+import { SkillInstallationTabs } from '../../components/SkillInstallationTabs';
 import type { RegistrySkill } from '../../types/registry';
 import registryData from '../../data/registry.json';
 
-export async function getStaticPaths() {
-  const data = registryData as { skills: RegistrySkill[] };
-  return data.skills.map((skill) => ({
-    params: { name: skill.name },
-    props: { skill },
-  }));
+interface FileEntry {
+  filename: string;
+  content: string;
+  language: string;
 }
 
-const { skill } = Astro.props;
+interface UtilEntry {
+  filename: string;
+  content: string;
+}
 
-const installCmd = `bunx skz add ${skill.name}`;
+export async function getStaticPaths() {
+  const data = registryData as { skills: RegistrySkill[] };
+  
+  const paths = await Promise.all(data.skills.map(async (skill) => {
+    const fileEntries: FileEntry[] = [];
+    const utilEntries: UtilEntry[] = [];
+    
+    // Read SKILL.md
+    try {
+      const skillMdPath = join(process.cwd(), "..", "skills", skill.name, "SKILL.md");
+      const content = await readFile(skillMdPath, "utf-8");
+      fileEntries.push({
+        filename: "SKILL.md",
+        content,
+        language: "markdown",
+      });
+    } catch (e) {
+      // File might not exist
+    }
+    
+    // Read entry point files
+    if (skill.files?.entry) {
+      for (const [name, path] of Object.entries(skill.files.entry)) {
+        try {
+          const filePath = join(process.cwd(), "..", path);
+          const content = await readFile(filePath, "utf-8");
+          const filename = path.split("/").pop() || `${name}.ts`;
+          fileEntries.push({
+            filename,
+            content,
+            language: "typescript",
+          });
+        } catch (e) {
+          // File might not exist
+        }
+      }
+    }
+    
+    // Read utils if they exist
+    if (skill.utils) {
+      for (const util of skill.utils) {
+        try {
+          const utilPath = join(process.cwd(), "..", "utils", `${util}.ts`);
+          const content = await readFile(utilPath, "utf-8");
+          utilEntries.push({ filename: `${util}.ts`, content });
+        } catch (e) {
+          // File might not exist
+        }
+      }
+    }
+    
+    return {
+      params: { name: skill.name },
+      props: { skill, fileEntries, utilEntries },
+    };
+  }));
+  
+  return paths;
+}
+
+const { skill, fileEntries, utilEntries } = Astro.props;
+
+const installCmd = `bunx @bind/skillz add ${skill.name}`;
+const envVars = skill.setup?.env || [];
+const instructions = skill.setup?.instructions || "";
+const depKeys = Object.keys(skill.dependencies || {});
 ---
 
 <Layout title={skill.name} activePage="skills">
-  <PageContainer>
-    <div class="mb-8">
-      <div class="flex items-center gap-3 mb-3">
-        <Badge>v{skill.version}</Badge>
-        {skill.domain && <Badge class="capitalize">{skill.domain}</Badge>}
+  <PageContainer size="lg">
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
+      <div>
+        <div class="flex items-center gap-2 mb-3">
+          <Badge>v{skill.version}</Badge>
+          {skill.domain && (
+            <a href={`/skills/domain/${skill.domain}`}>
+              <Badge class="capitalize hover:bg-gray-200 transition-colors">{skill.domain}</Badge>
+            </a>
+          )}
+        </div>
+        <h1 class="text-4xl font-bold tracking-tight text-gray-900 mb-2">{skill.name}</h1>
+        <p class="text-lg text-gray-600">{skill.description}</p>
       </div>
-      <h1 class="text-4xl font-bold mb-3 tracking-tight text-gray-900">{skill.name}</h1>
-      <p class="text-lg text-gray-600 leading-relaxed">{skill.description}</p>
+      <div class="flex-shrink-0">
+        <CodeBlock code={installCmd} client:load />
+      </div>
     </div>
 
-    <div class="mb-8">
-      <CodeBlock code={installCmd} client:load />
-    </div>
-
-    {skill.setup?.instructions && (
-      <Card variant="muted" class="mt-6">
-        <h3 class="text-sm font-medium text-gray-700 mb-2">Setup Required</h3>
-        <p class="text-sm text-gray-600">{skill.setup.instructions}</p>
-      </Card>
+    <!-- Setup Section -->
+    {envVars.length > 0 && (
+      <section class="mb-12">
+        <SectionTitle>Setup</SectionTitle>
+        <div>
+          <h3 class="text-sm font-semibold text-gray-700 mb-2">Environment Variables</h3>
+          <p class="text-sm text-gray-600 mb-3">
+            Add to a <code class="bg-gray-100 px-1 rounded">.env</code> file in your repo root, or export in your shell environment.
+          </p>
+          <CodeBlock code={envVars.map((v: string) => `${v}=your_value_here`).join("\n")} copyMode="hover" client:load />
+          {instructions && (
+            <p class="text-sm text-gray-500 mt-2">{instructions}</p>
+          )}
+        </div>
+      </section>
     )}
 
-    {skill.setup?.env && skill.setup.env.length > 0 && (
-      <div class="mt-4 text-sm">
-        <span class="text-gray-600">Required env:</span>
-        <span class="text-gray-800 ml-2">{skill.setup.env.map((e) => `\`${e}\``).join(', ')}</span>
-      </div>
-    )}
+    <!-- Installation Section -->
+    <section class="mb-12">
+      <SectionTitle>Installation</SectionTitle>
+      <SkillInstallationTabs
+        skillName={skill.name}
+        installCmd={installCmd}
+        fileEntries={fileEntries}
+        utilEntries={utilEntries}
+        depKeys={depKeys}
+        envVars={envVars}
+        client:load
+      />
+    </section>
 
-    {skill.dependencies && Object.keys(skill.dependencies).length > 0 && (
-      <Card variant="muted" class="mt-6">
-        <h3 class="text-sm font-medium text-gray-700 mb-2">Dependencies</h3>
-        <ul class="text-sm text-gray-600 space-y-1">
-          {Object.entries(skill.dependencies).map(([name, version]) => (
-            <li><code>{name}</code> <span class="text-gray-500">{version}</span></li>
-          ))}
-        </ul>
-      </Card>
-    )}
   </PageContainer>
 </Layout>

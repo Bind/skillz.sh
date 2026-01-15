@@ -1,0 +1,258 @@
+---
+import { readFile } from "node:fs/promises";
+import { join } from "node:path";
+import Layout from "../../../layouts/Layout.astro";
+import PageContainer from "../../../components/PageContainer.astro";
+import Badge from "../../../components/Badge.astro";
+import Card from "../../../components/Card.astro";
+import SectionTitle from "../../../components/SectionTitle.astro";
+import { CodeBlock } from "../../../components/CodeBlock";
+import { InstallationTabs } from "../../../components/InstallationTabs";
+import type { RegistrySkill } from "../../../types/registry";
+import registryData from "../../../data/registry.json";
+
+// Domain metadata - hardcoded descriptions
+const domainMeta: Record<string, { title: string; description: string }> = {
+  linear: {
+    title: "Linear",
+    description: "Manage issues, projects, and milestones in Linear",
+  },
+  github: {
+    title: "GitHub",
+    description: "GitHub PR utilities and code review workflows",
+  },
+  browser: {
+    title: "Browser",
+    description: "Control browsers with Playwright for automation and testing",
+  },
+  database: {
+    title: "Database",
+    description: "Run queries and manage database operations",
+  },
+  docs: {
+    title: "Documentation",
+    description: "Generate and manage project documentation",
+  },
+  terminal: {
+    title: "Terminal",
+    description: "Manage terminal sessions and background processes",
+  },
+};
+
+interface FileEntry {
+  skillName: string;
+  filename: string;
+  content: string;
+  language: string;
+}
+
+interface UtilEntry {
+  filename: string;
+  content: string;
+}
+
+export async function getStaticPaths() {
+  const data = registryData as { skills: RegistrySkill[] };
+  
+  // Get unique domains
+  const domains = [...new Set(data.skills.map(s => s.domain).filter(Boolean))] as string[];
+  
+  // For each domain, gather skills and file contents
+  const paths = await Promise.all(domains.map(async (domain) => {
+    const skills = data.skills.filter(s => s.domain === domain);
+    
+    // Gather file contents for each skill as flat array
+    const fileEntries: FileEntry[] = [];
+    
+    for (const skill of skills) {
+      // Read SKILL.md
+      try {
+        const skillMdPath = join(process.cwd(), "..", "skills", skill.name, "SKILL.md");
+        const content = await readFile(skillMdPath, "utf-8");
+        fileEntries.push({
+          skillName: skill.name,
+          filename: "SKILL.md",
+          content,
+          language: "markdown",
+        });
+      } catch (e) {
+        // File might not exist
+      }
+      
+      // Read entry point files
+      if (skill.files?.entry) {
+        for (const [name, path] of Object.entries(skill.files.entry)) {
+          try {
+            const filePath = join(process.cwd(), "..", path);
+            const content = await readFile(filePath, "utf-8");
+            const filename = path.split("/").pop() || `${name}.ts`;
+            fileEntries.push({
+              skillName: skill.name,
+              filename,
+              content,
+              language: "typescript",
+            });
+          } catch (e) {
+            // File might not exist
+          }
+        }
+      }
+    }
+    
+    // Read shared utils if they exist
+    const utilEntries: UtilEntry[] = [];
+    const firstSkill = skills[0];
+    if (firstSkill?.utils?.includes(domain)) {
+      try {
+        const utilPath = join(process.cwd(), "..", "utils", `${domain}.ts`);
+        const content = await readFile(utilPath, "utf-8");
+        utilEntries.push({ filename: `${domain}.ts`, content });
+      } catch (e) {
+        // File might not exist
+      }
+    }
+    
+    // Also read the base utils if used
+    if (firstSkill?.utils?.includes("utils")) {
+      try {
+        const utilPath = join(process.cwd(), "..", "utils", "utils.ts");
+        const content = await readFile(utilPath, "utf-8");
+        utilEntries.push({ filename: "utils.ts", content });
+      } catch (e) {
+        // File might not exist
+      }
+    }
+    
+    return {
+      params: { domain },
+      props: { 
+        domain, 
+        skills,
+        fileEntries,
+        utilEntries,
+      },
+    };
+  }));
+  
+  return paths;
+}
+
+const { domain, skills, fileEntries, utilEntries } = Astro.props;
+const meta = domainMeta[domain] || { title: domain, description: "" };
+
+// Extract common setup from skills
+const firstSkill = skills[0];
+const envVars = firstSkill?.setup?.env || [];
+const instructions = firstSkill?.setup?.instructions || "";
+const dependencies = firstSkill?.dependencies || {};
+const depKeys = Object.keys(dependencies);
+
+// Sort skills: group by entity (issues, projects, milestones), with read before write
+const sortedSkills = [...skills].sort((a: RegistrySkill, b: RegistrySkill) => {
+  // Define entity order
+  const entityOrder: Record<string, number> = { issues: 0, projects: 1, milestones: 2 };
+  const typeOrder: Record<string, number> = { read: 0, write: 1 };
+  
+  // Extract entity and type from skill name (e.g., "linear-issues-read" -> "issues", "read")
+  const getEntityAndType = (name: string) => {
+    const parts = name.split("-");
+    const type = parts[parts.length - 1]; // "read" or "write"
+    const entity = parts[parts.length - 2]; // "issues", "projects", "milestones"
+    return { entity, type };
+  };
+  
+  const aInfo = getEntityAndType(a.name);
+  const bInfo = getEntityAndType(b.name);
+  
+  // Sort by entity first, then by type (read before write)
+  const aEntityOrder = entityOrder[aInfo.entity] ?? 99;
+  const bEntityOrder = entityOrder[bInfo.entity] ?? 99;
+  
+  if (aEntityOrder !== bEntityOrder) {
+    return aEntityOrder - bEntityOrder;
+  }
+  
+  const aTypeOrder = typeOrder[aInfo.type] ?? 99;
+  const bTypeOrder = typeOrder[bInfo.type] ?? 99;
+  
+  return aTypeOrder - bTypeOrder;
+});
+
+const installCmd = `bunx @bind/skillz add ${domain}`;
+---
+
+<Layout title={meta.title} activePage="skills">
+  <PageContainer size="lg">
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
+      <div>
+        <Badge class="mb-3">{domain}</Badge>
+        <h1 class="text-4xl font-bold tracking-tight text-gray-900 mb-2">{meta.title}</h1>
+        <p class="text-lg text-gray-600">{meta.description}</p>
+      </div>
+      <div class="flex-shrink-0">
+        <CodeBlock code={installCmd} client:load />
+      </div>
+    </div>
+
+    <!-- Skills Table (right after header) -->
+    <div class="mb-10 overflow-x-auto">
+      <table class="w-full text-xs">
+        <thead>
+          <tr class="border-b border-gray-200">
+            <th class="text-left py-1.5 pr-3 font-medium text-gray-500">Skill</th>
+            <th class="text-left py-1.5 font-medium text-gray-500">Description</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-100">
+          {sortedSkills.map((skill: RegistrySkill) => (
+            <tr class="hover:bg-gray-50">
+              <td class="py-1.5 pr-3">
+                <a href={`/skills/${skill.name}`} class="font-medium text-gray-900 hover:text-gray-600">
+                  {skill.name}
+                </a>
+              </td>
+              <td class="py-1.5 text-gray-500">
+                {skill.description}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Setup Section -->
+    <section class="mb-12">
+      <SectionTitle>Setup</SectionTitle>
+      
+      {envVars.length > 0 && (
+        <div>
+          <h3 class="text-sm font-semibold text-gray-700 mb-2">Environment Variables</h3>
+          <p class="text-sm text-gray-600 mb-3">
+            Add to a <code class="bg-gray-100 px-1 rounded">.env</code> file in your repo root, or export in your shell environment.
+          </p>
+          <CodeBlock code={envVars.map((v: string) => `${v}=your_value_here`).join("\n")} copyMode="hover" client:load />
+          {instructions && (
+            <p class="text-sm text-gray-500 mt-2">{instructions}</p>
+          )}
+        </div>
+      )}
+    </section>
+
+    <!-- Installation Section -->
+    <section class="mb-12">
+      <SectionTitle>Installation</SectionTitle>
+      <InstallationTabs
+        domain={domain}
+        installCmd={installCmd}
+        skills={skills}
+        fileEntries={fileEntries}
+        utilEntries={utilEntries}
+        depKeys={depKeys}
+        envVars={envVars}
+        client:load
+      />
+    </section>
+
+  </PageContainer>
+</Layout>

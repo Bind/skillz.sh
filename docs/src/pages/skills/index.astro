@@ -41,22 +41,40 @@ const domains = [...byDomain.keys()].sort((a, b) => {
       <div class="max-w-3xl mx-auto">
         <div class="mb-8">
           <InlineCode class="px-4 py-2 rounded-lg">
-            bunx skz add &lt;skill-name&gt;
+            bunx @bind/skillz add &lt;skill-name&gt;
           </InlineCode>
         </div>
 
         {domains.map((domain) => {
           const domainSkills = byDomain.get(domain)!;
+          const hasDomainPage = domain !== "other";
 
           return (
             <section id={`domain-${domain}`} class="mb-10">
               <div class="flex items-center gap-3 mb-3">
-                <h2 class="text-lg font-semibold capitalize text-gray-900">
-                  {domain}
-                </h2>
+                {hasDomainPage ? (
+                  <a 
+                    href={`/skills/domain/${domain}`}
+                    class="text-lg font-semibold capitalize text-gray-900 hover:text-gray-600 transition-colors"
+                  >
+                    {domain}
+                  </a>
+                ) : (
+                  <h2 class="text-lg font-semibold capitalize text-gray-900">
+                    {domain}
+                  </h2>
+                )}
                 <span class="text-sm text-gray-500">
                   {domainSkills.length} skill{domainSkills.length === 1 ? "" : "s"}
                 </span>
+                {hasDomainPage && (
+                  <a 
+                    href={`/skills/domain/${domain}`}
+                    class="text-xs text-gray-400 hover:text-gray-600 transition-colors"
+                  >
+                    View docs →
+                  </a>
+                )}
               </div>
 
               <div class="grid gap-1">

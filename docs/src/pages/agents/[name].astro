@@ -16,7 +16,7 @@ export async function getStaticPaths() {
 
 const { agent } = Astro.props;
 
-const installCmd = `bunx skz agent ${agent.name}`;
+const installCmd = `bunx @bind/skillz agent ${agent.name}`;
 ---
 
 <Layout title={agent.name} activePage="agents">
