@@ -17,6 +17,13 @@ import {
   CLAUDE_SKILLS_DIR,
   CLAUDE_CONFIG_PATH,
 } from "../types.ts";
+
+/**
+ * Get the registry URL, using test registry if SKZ_TEST_REGISTRY env var is set.
+ */
+function getRegistryUrl(): string {
+  return process.env.SKZ_TEST_REGISTRY ?? DEFAULT_REGISTRY;
+}
 import { mkdir, stat } from "node:fs/promises";
 import { join } from "node:path";
 
@@ -49,9 +56,10 @@ export async function init(forceClaude: boolean = false): Promise<void> {
     : createDefaultConfig();
 
   // Fetch registry to get basePath for utils
+  const registryUrl = getRegistryUrl();
   let basePath: string | undefined;
   try {
-    const registry = await fetchRegistry(DEFAULT_REGISTRY);
+    const registry = await fetchRegistry(registryUrl);
     basePath = registry.basePath;
   } catch {
     // Continue without basePath if registry fetch fails
@@ -69,7 +77,7 @@ export async function init(forceClaude: boolean = false): Promise<void> {
     console.log(`Created ${utilsDir}/`);
 
     try {
-      const utilsContent = await fetchUtilFile(DEFAULT_REGISTRY, "utils.ts", basePath);
+      const utilsContent = await fetchUtilFile(registryUrl, "utils.ts", basePath);
       const utilsPath = join(utilsDir, "utils.ts");
       await Bun.write(utilsPath, utilsContent);
       console.log(`Created ${utilsPath}`);
@@ -90,7 +98,7 @@ export async function init(forceClaude: boolean = false): Promise<void> {
     console.log(`Created ${utilsDir}/`);
 
     try {
-      const utilsContent = await fetchUtilFile(DEFAULT_REGISTRY, "utils.ts", basePath);
+      const utilsContent = await fetchUtilFile(registryUrl, "utils.ts", basePath);
       const utilsPath = join(utilsDir, "utils.ts");
       await Bun.write(utilsPath, utilsContent);
       console.log(`Created ${utilsPath}`);
