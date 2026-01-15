@@ -1,35 +1,78 @@
 ---
 import Layout from "../layouts/Layout.astro";
+import Card from "../components/Card.astro";
+import { CyclingText } from "../components/CyclingText";
+import { FeatureList } from "../components/FeatureList";
 ---
 
 <Layout title="Home">
-  <main class="flex-1 flex flex-col items-center justify-center min-h-[calc(100vh-3.5rem)]">
-    <div class="text-center">
-      <h1 class="text-8xl font-mono font-bold tracking-tight text-gray-900 mb-6">
-        SKZ
+  <main class="flex-1 flex flex-col items-center px-6 py-16">
+    <!-- Hero Section -->
+    <section class="text-center max-w-2xl mb-16">
+      <h1 class="text-4xl sm:text-5xl font-bold text-gray-900">
+        Composable tools for <CyclingText words={["Claude", "OpenCode", "Amp", "Codex"]} client:load />
       </h1>
-      <p class="text-xl text-gray-600 mb-8 max-w-md mx-auto">
-        Skills and agents for AI coding assistants
-      </p>
-      <div class="flex gap-4 justify-center">
-        <a
-          href="/skills"
-          class="px-6 py-3 bg-gray-900 text-white rounded-lg font-medium hover:bg-gray-700 transition-colors"
-        >
-          Browse Skills
+    </section>
+
+    <!-- Features + CTA Section -->
+    <section class="w-full max-w-3xl mb-20">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-center gap-10 sm:gap-0">
+        <!-- Features Column -->
+        <div class="sm:pr-12">
+          <FeatureList client:load />
+        </div>
+        
+        <!-- Divider -->
+        <div class="hidden sm:block w-px bg-gray-200 self-stretch"></div>
+        
+        <!-- CTA Column -->
+        <div class="sm:pl-12 flex flex-col items-start gap-6">
+          <code class="text-sm bg-gray-100 px-4 py-2 rounded-lg font-mono text-gray-800">
+            bunx @bind/skillz init
+          </code>
+          <div class="flex gap-3">
+            <a
+              href="/getting-started"
+              class="px-6 py-3 bg-gray-900 text-white rounded-lg font-medium hover:bg-gray-700 transition-colors"
+            >
+              Get Started
+            </a>
+            <a
+              href="/skills"
+              class="px-6 py-3 bg-gray-100 text-gray-900 rounded-lg font-medium hover:bg-gray-200 transition-colors"
+            >
+              Browse Skills
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Featured Skills -->
+    <section class="max-w-3xl w-full">
+      <h2 class="text-sm font-medium text-gray-400 uppercase tracking-wide mb-4 text-center">
+        Featured Skills
+      </h2>
+      <div class="grid sm:grid-cols-3 gap-4">
+        <a href="/skills/linear-issues-read" class="block">
+          <Card hoverable class="h-full">
+            <p class="font-semibold text-gray-900 mb-1">Linear</p>
+            <p class="text-sm text-gray-500">Manage issues and projects</p>
+          </Card>
         </a>
-        <a
-          href="/getting-started"
-          class="px-6 py-3 bg-gray-100 text-gray-900 rounded-lg font-medium hover:bg-gray-200 transition-colors"
-        >
-          Get Started
+        <a href="/skills/code-review" class="block">
+          <Card hoverable class="h-full">
+            <p class="font-semibold text-gray-900 mb-1">Code Review</p>
+            <p class="text-sm text-gray-500">Automated PR analysis</p>
+          </Card>
+        </a>
+        <a href="/skills/playwright-browser" class="block">
+          <Card hoverable class="h-full">
+            <p class="font-semibold text-gray-900 mb-1">Playwright</p>
+            <p class="text-sm text-gray-500">Control a browser</p>
+          </Card>
         </a>
       </div>
-      <div class="mt-12">
-        <code class="text-sm bg-gray-100 px-4 py-2 rounded-lg font-mono text-gray-800">
-          bunx skz init
-        </code>
-      </div>
-    </div>
+    </section>
   </main>
 </Layout>
